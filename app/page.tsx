@@ -39,8 +39,8 @@ export default function Home() {
 
       <main className="flex-1">
         <HeroSection />
-        <FeatureSection />
-        <TestimonialSection />
+        {/* <FeatureSection /> */}
+        {/* <TestimonialSection /> */}
         
         <section id="pricing" className="py-20 bg-muted/50">
           <div className="container mx-auto px-4 md:px-6 text-center">
