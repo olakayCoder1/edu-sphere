@@ -195,7 +195,7 @@ export default function StudentDashboard() {
   return (
     <div>
       <Header title="Student Dashboard" />
-      <main className="container mx-auto px-4 py-6 bg-green-500">
+      <main className="container mx-auto px-4 py-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatsCard
             title="Enrolled Courses"
