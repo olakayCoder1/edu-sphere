@@ -333,7 +333,7 @@ export default function StudentDashboard() {
                             <span>Score</span>
                             <span className="font-medium">{activity.score}%</span>
                           </div>
-                          <Progress value={activity.score} className="h-1.5" />
+                          {/* <Progress value={parseFloat(activity.score)} className="h-1.5" /> */}
                         </div>
                       )}
                     </div>

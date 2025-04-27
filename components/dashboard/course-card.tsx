@@ -33,7 +33,7 @@ export function CourseCard({ course, userRole }: CourseCardProps) {
                 <span>Progress</span>
                 <span>{course.progress}%</span>
               </div>
-              <Progress value={course.progress} className="h-1.5" />
+              {/* <Progress value={course.progress} className="h-1.5" /> */}
             </div>
           )}
         </div>

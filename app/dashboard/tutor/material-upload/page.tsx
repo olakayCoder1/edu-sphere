@@ -263,7 +263,7 @@ export default function MaterialUpload() {
                           <span>Uploading...</span>
                           <span>{uploadProgress}%</span>
                         </div>
-                        <Progress value={uploadProgress} className="h-2" />
+                        {/* <Progress value={(uploadProgress)} className="h-2" /> */}
                       </div>
                     )}
                     
@@ -303,9 +303,9 @@ export default function MaterialUpload() {
                     <div className="flex-1">
                       <h3 className="font-medium">File Upload</h3>
                       <p className="text-sm text-muted-foreground">Uploading your file to the server</p>
-                      {isUploading && (
+                      {/* {isUploading && (
                         <Progress value={uploadProgress} className="h-1.5 mt-2" />
-                      )}
+                      )} */}
                     </div>
                   </div>
                   
@@ -328,9 +328,9 @@ export default function MaterialUpload() {
                     <div className="flex-1">
                       <h3 className="font-medium">AI Processing</h3>
                       <p className="text-sm text-muted-foreground">Analyzing content and generating chapters</p>
-                      {processingStatus === 'processing' && (
+                      {/* {processingStatus === 'processing' && (
                         <Progress value={processingProgress} className="h-1.5 mt-2" />
-                      )}
+                      )} */}
                     </div>
                   </div>
                   
