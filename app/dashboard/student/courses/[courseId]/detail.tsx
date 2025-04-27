@@ -41,7 +41,7 @@ export default function CourseDetail() {
     const courseId = params.courseId as string;
     const foundCourse = DEMO_COURSES.find(c => c.id === courseId);
     if (foundCourse) {
-      setCourse(foundCourse);
+      setCourse(foundCourse as Course);
       // Set first chapter as active by default
       if (foundCourse.chapters.length > 0) {
         setActiveChapter(foundCourse.chapters[0]);

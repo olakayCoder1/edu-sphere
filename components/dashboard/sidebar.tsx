@@ -18,9 +18,10 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { JSXElementConstructor, Key, PromiseLikeOfReactNode, ReactElement, ReactNode, ReactPortal, useEffect, useState } from "react";
 import { DASHBOARD_LINKS } from "@/lib/constants";
 import { User } from "@/lib/types";
+import { UrlObject } from "node:url";
 
 interface SidebarProps {
   className?: string;
@@ -103,25 +104,25 @@ export function Sidebar({ className }: SidebarProps) {
               </div>
               <div className="flex-1 overflow-auto py-4 px-3">
                 <nav className="flex flex-col space-y-1">
-                  {links.map((link, index) => (
+                    {links.map((link: { href: string | UrlObject; icon: ReactNode; label: ReactNode }, index: number) => (
                     <Link
                       key={index}
                       href={link.href}
                       onClick={() => setIsOpen(false)}
                     >
                       <span
-                        className={cn(
-                          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                          pathname === link.href
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-muted"
-                        )}
+                      className={cn(
+                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        pathname === link.href
+                        ? "bg-primary text-primary-foreground"
+                        : "hover:bg-muted"
+                      )}
                       >
-                        {link.icon}
-                        {link.label}
+                      {link.icon}
+                      {link.label}
                       </span>
                     </Link>
-                  ))}
+                    ))}
                 </nav>
               </div>
               <div className="p-4 border-t">
@@ -154,7 +155,7 @@ export function Sidebar({ className }: SidebarProps) {
         </div>
         <div className="flex-1 overflow-auto py-2 px-4">
           <nav className="flex flex-col space-y-1">
-            {links.map((link, index) => (
+            {links.map((link: { href: string | UrlObject; icon: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; label: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; }, index: Key | null | undefined) => (
               <Link key={index} href={link.href}>
                 <span
                   className={cn(
