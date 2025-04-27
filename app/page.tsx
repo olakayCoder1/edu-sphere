@@ -44,7 +44,7 @@ export default function Home() {
         {/* <FeatureSection /> */}
         {/* <TestimonialSection /> */}
         
-        <section id="pricing" className="py-20 bg-muted/50">
+        {/* <section id="pricing" className="py-20 bg-muted/50">
           <div className="container mx-auto px-4 md:px-6 text-center">
             <h2 className="text-3xl font-bold mb-12">Start Your Learning Journey Today</h2>
             <div className="flex flex-col md:flex-row justify-center gap-8 max-w-5xl mx-auto">
@@ -104,7 +104,7 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </section>
+        </section> */}
       </main>
 
       <Footer />
