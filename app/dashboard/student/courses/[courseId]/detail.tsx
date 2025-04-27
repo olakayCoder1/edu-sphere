@@ -44,7 +44,7 @@ export default function CourseDetail() {
       setCourse(foundCourse as Course);
       // Set first chapter as active by default
       if (foundCourse.chapters.length > 0) {
-        setActiveChapter(foundCourse.chapters[0]);
+        setActiveChapter(foundCourse.chapters[0]);   
         // If it's the first chapter, load the quiz sample
         if (foundCourse.chapters[0].id === "ch-1") {
           setActiveQuiz(DEMO_QUIZ);
