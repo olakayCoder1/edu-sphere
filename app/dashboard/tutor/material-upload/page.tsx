@@ -13,7 +13,46 @@ import { FileCheck, FileUp, Upload, ChevronLeft, CircleCheck, Book } from "lucid
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import { motion } from "framer-motion";
-import { DEMO_COURSES } from "@/lib/constants";
+import { Course } from "@/lib/types";
+// import { DEMO_COURSES } from "@/lib/constants";
+
+
+const DEMO_COURSES: Course[] = [
+  {
+    id: "course-1",
+    title: "Introduction to Programming",
+    description: "Learn the basics of programming.",
+    tutor: "John Doe",
+    thumbnail: "/images/programming-course.jpg",
+    totalChapters: 10,
+    completedChapters: 5,
+    progress: 50,
+    status: "in-progress",
+    category: "Programming",
+    level: "Beginner",
+    students: 120,
+    duration: "120",
+    chapters: [],
+  },
+  {
+    id: "course-2",
+    title: "Advanced React",
+    description: "Master React with advanced concepts.",
+    tutor: "Jane Smith",
+    thumbnail: "/images/react-course.jpg",
+    totalChapters: 15,
+    completedChapters: 15,
+    progress: 100,
+    status: "completed",
+    category: "Web Development",
+    level: "Advanced",
+    students: 80,
+    duration: "180",
+    chapters: [],
+  },
+];
+
+
 
 export default function MaterialUpload() {
   const router = useRouter();

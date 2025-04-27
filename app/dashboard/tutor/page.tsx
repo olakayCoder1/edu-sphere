@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Course, LiveClass, Tutor } from "@/lib/types";
-import { DEMO_COURSES, DEMO_LIVE_CLASSES } from "@/lib/constants";
+// import { DEMO_COURSES, DEMO_LIVE_CLASSES } from "@/lib/constants";
 import { 
   BookOpen, 
   Users, 
@@ -25,6 +25,72 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+
+
+const DEMO_COURSES: Course[] = [
+  {
+    id: "course-1",
+    title: "Introduction to Programming",
+    description: "Learn the basics of programming.",
+    tutor: "John Doe",
+    thumbnail: "/images/programming-course.jpg",
+    totalChapters: 10,
+    completedChapters: 5,
+    progress: 50,
+    status: "in-progress",
+    category: "Programming",
+    level: "Beginner",
+    students: 120,
+    duration: "120",
+    chapters: [],
+  },
+  {
+    id: "course-2",
+    title: "Advanced React",
+    description: "Master React with advanced concepts.",
+    tutor: "Jane Smith",
+    thumbnail: "/images/react-course.jpg",
+    totalChapters: 15,
+    completedChapters: 15,
+    progress: 100,
+    status: "completed",
+    category: "Web Development",
+    level: "Advanced",
+    students: 80,
+    duration: "180",
+    chapters: [],
+  },
+];
+
+// Adjusted DEMO_LIVE_CLASSES to match the expected LiveClass type
+const DEMO_LIVE_CLASSES: LiveClass[] = [
+  {
+    id: "class-1",
+    title: "Introduction to React",
+    course: "Web Development",
+    tutor: "John Doe",
+    date: "2023-11-25T10:00:00Z",
+    duration: 120,
+    status: "upcoming",
+    attendees: 50,
+    thumbnail: "/images/react-class.jpg",
+  },
+  {
+    id: "class-2",
+    title: "Advanced TypeScript",
+    course: "Programming",
+    tutor: "Jane Smith",
+    date: "2023-11-20T14:00:00Z",
+    duration: 90,
+    status: "completed",
+    attendees: 30,
+    thumbnail: "/images/typescript-class.jpg",
+    recording: "/recordings/typescript-class.mp4",
+  },
+];
+
+
 
 // Sample data for the chart
 const engagementData = [

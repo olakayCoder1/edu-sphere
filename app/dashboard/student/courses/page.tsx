@@ -51,33 +51,6 @@ const DEMO_COURSES: Course[] = [
   },
 ];
 
-// Adjusted DEMO_LIVE_CLASSES to match the expected LiveClass type
-const DEMO_LIVE_CLASSES: LiveClass[] = [
-  {
-    id: "class-1",
-    title: "Introduction to React",
-    course: "Web Development",
-    tutor: "John Doe",
-    date: "2023-11-25T10:00:00Z",
-    duration: 120,
-    status: "upcoming",
-    attendees: 50,
-    thumbnail: "/images/react-class.jpg",
-  },
-  {
-    id: "class-2",
-    title: "Advanced TypeScript",
-    course: "Programming",
-    tutor: "Jane Smith",
-    date: "2023-11-20T14:00:00Z",
-    duration: 90,
-    status: "completed",
-    attendees: 30,
-    thumbnail: "/images/typescript-class.jpg",
-    recording: "/recordings/typescript-class.mp4",
-  },
-];
-
 
 export default function StudentCourses() {
   const [courses, setCourses] = useState<Course[]>([]);

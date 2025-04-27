@@ -6,7 +6,7 @@ import { StatsCard } from "@/components/dashboard/stats-card";
 import { CourseCard } from "@/components/dashboard/course-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Course, LiveClass, User, Admin } from "@/lib/types";
+import { Course, LiveClass,Admin } from "@/lib/types";
 // import { DEMO_USERS } from "@/lib/constants";
 
 // Adjusted DEMO_COURSES to match the expected Course type
