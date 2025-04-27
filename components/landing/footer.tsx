@@ -16,7 +16,7 @@ export function Footer() {
             </p>
           </div>
           
-          <div>
+          {/* <div>
             <h3 className="font-semibold text-lg mb-4">Platform</h3>
             <ul className="space-y-3">
               <li><Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</Link></li>
@@ -35,7 +35,7 @@ export function Footer() {
               <li><Link href="#" className="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link></li>
             </ul>
           </div>
-          
+           */}
           <div>
             <h3 className="font-semibold text-lg mb-4">Connect</h3>
             <div className="flex space-x-4 mb-4">
