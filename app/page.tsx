@@ -17,7 +17,7 @@ export default function Home() {
             <BookOpen className="h-6 w-6 text-primary" />
             <span className="font-bold text-xl">EduSphere</span>
           </div>
-          <nav className="hidden md:flex items-center space-x-6">
+          {/* <nav className="hidden md:flex items-center space-x-6">
             <Link href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
               Features
             </Link>
@@ -27,7 +27,7 @@ export default function Home() {
             <Link href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
               Pricing
             </Link>
-          </nav>
+          </nav> */}
           <div className="flex items-center space-x-4">
             <Link href="/auth/sign-in">
               <Button variant="outline">Sign In</Button>
