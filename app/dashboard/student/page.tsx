@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { 
-  BookOpen, 
-  Users, 
-  GraduationCap, 
+import {
+  BookOpen, GraduationCap,
   Clock,
   CalendarDays,
   Video,
@@ -17,9 +15,7 @@ import { CourseCard } from "@/components/dashboard/course-card";
 import { LiveClassCard } from "@/components/dashboard/live-class-card";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Course, LiveClass, QuizResult, Student } from "@/lib/types";
+import { Course, LiveClass, Student } from "@/lib/types";
 // import { DEMO_COURSES, DEMO_LIVE_CLASSES } from "@/lib/constants";
 // Adjusted DEMO_COURSES to match the expected Course type
 const DEMO_COURSES: Course[] = [

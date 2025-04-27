@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, Users, Video, Shield } from "lucide-react";
+import { ArrowRight, BookOpen, 
+  // Users, Video, Shield
+ } from "lucide-react";
 import { HeroSection } from "@/components/landing/hero-section";
-import { FeatureSection } from "@/components/landing/feature-section";
-import { TestimonialSection } from "@/components/landing/testimonial-section";
+// import { FeatureSection } from "@/components/landing/feature-section";
+// import { TestimonialSection } from "@/components/landing/testimonial-section";
 import { Footer } from "@/components/landing/footer";
 
 export default function Home() {
