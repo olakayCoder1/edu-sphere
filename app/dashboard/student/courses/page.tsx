@@ -93,7 +93,7 @@ export default function StudentCourses() {
         course => 
           course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          course.category.toLowerCase().includes(searchTerm.toLowerCase())
+          (course.category ?? "").toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
@@ -147,7 +147,7 @@ export default function StudentCourses() {
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
+                    <SelectItem key={category} value={category || "unknown"}>
                       {category === "all" ? "All Categories" : category}
                     </SelectItem>
                   ))}

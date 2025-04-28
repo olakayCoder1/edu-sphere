@@ -45,6 +45,7 @@ export type Course = {
   duration: string;
   rating?: number;
   students?: number;
+  category?:string|undefined;
   lastAccessed?: string | null;
   chapters: Chapter[];
   createdAt?: string;
