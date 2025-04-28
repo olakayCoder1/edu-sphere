@@ -81,8 +81,8 @@ import { DEMO_COURSES, DEMO_LIVE_CLASSES } from "@/lib/constants";
 // ];
 
 export default function StudentDashboard() {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [liveClasses, setLiveClasses] = useState<LiveClass[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [liveClasses, setLiveClasses] = useState<any[]>([]);
   const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const [upcomingDeadlines, setUpcomingDeadlines] = useState<any[]>([]);
   const [student, setStudent] = useState<Student | null>(null);
