@@ -143,7 +143,8 @@ export function Sidebar({ className }: SidebarProps) {
       {/* Desktop Sidebar */}
       <div
         className={cn(
-          "hidden lg:flex lg:flex-col h-screen w-64 border-r bg-background",
+          "hidden lg:flex fixed top-0 bottom-0 lg:flex-col h-screen w-64 border-r bg-background",
+          // "hidden lg:flex lg:flex-col h-screen w-64 border-r bg-background",
           className
         )}
       >
