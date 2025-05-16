@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -76,6 +76,30 @@ export default function CourseDetail({ courseData }: { courseData: Course }) {
   const [quizTimer, setQuizTimer] = useState<NodeJS.Timeout | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false); // State for tracking API submission
 
+
+  const handleLessonSelect = useCallback((lesson: Lesson) => {
+    setActiveLesson(lesson);
+  
+    // Reset quiz state when changing lessons
+    setQuizStarted(false);
+    setQuizAnswers([]);
+    setQuizSubmitted(false);
+    setQuizScore(0);
+    if (quizTimer) clearInterval(quizTimer);
+  
+    // Set the first quiz as active if available
+    if (lesson?.quizzes && lesson.quizzes.length > 0) {
+      const quizWithTimeLimit = {
+        ...lesson.quizzes[0],
+        timeLimit: lesson.quizzes[0].timeLimit || 3,
+      };
+      setActiveQuiz(quizWithTimeLimit);
+    } else {
+      setActiveQuiz(null);
+    }
+  }, [quizTimer]);
+
+  
   // Initialize the course data
   useEffect(() => {
     if (courseData) {
@@ -98,30 +122,9 @@ export default function CourseDetail({ courseData }: { courseData: Course }) {
         handleLessonSelect(courseData.lessons[0]);
       }
     }
-  }, [courseData]);
+  }, [courseData,handleLessonSelect]);
 
-  const handleLessonSelect = (lesson: Lesson) => {
-    setActiveLesson(lesson);
-    
-    // Reset quiz state when changing lessons
-    setQuizStarted(false);
-    setQuizAnswers([]);
-    setQuizSubmitted(false);
-    setQuizScore(0);
-    if (quizTimer) clearInterval(quizTimer);
-    
-    // Set the first quiz as active if available
-    if (lesson?.quizzes && lesson.quizzes.length > 0) {
-      // Add timeLimit property if not present
-      const quizWithTimeLimit = {
-        ...lesson.quizzes[0],
-        timeLimit: lesson.quizzes[0].timeLimit || 3 // Default 3 minutes
-      };
-      setActiveQuiz(quizWithTimeLimit);
-    } else {
-      setActiveQuiz(null);
-    }
-  };
+
 
   const startQuiz = () => {
     setQuizStarted(true);

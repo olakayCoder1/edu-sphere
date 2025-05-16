@@ -33,6 +33,7 @@ export default function TutorCourseManagement() {
     try {
       setLoading(true);
       const response = await courseService.getCourses();
+      // @ts-ignore
       setCourses(response?.data || []);
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -79,7 +80,7 @@ export default function TutorCourseManagement() {
     }
 
     if (!newCourse.title.trim() || !newCourse.description.trim()) {
-      toast.error( "Please fill in all fields");
+      toast.error("Please fill in all fields");
       return;
     }
 
@@ -233,7 +234,7 @@ export default function TutorCourseManagement() {
               <FileText className="h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium">No courses yet</h3>
               <p className="text-muted-foreground text-center mt-2">
-                You haven't created any courses yet. Get started by adding your first course.
+              You haven&apos;t created any courses yet. Get started by adding your first course.
               </p>
               <Dialog>
                 <DialogTrigger asChild>
@@ -266,9 +267,9 @@ export default function TutorCourseManagement() {
                     <AlertDialogHeader>
                       <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete the course 
-                        "{course.title}" and all its associated lessons and quizzes.
+                        This action cannot be undone. This will permanently delete the course &quot;{course.title}&quot; and all its associated lessons and quizzes.
                       </AlertDialogDescription>
+
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>

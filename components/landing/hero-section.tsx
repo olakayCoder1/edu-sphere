@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-
+import Image from "next/image";
 export function HeroSection() {
   return (
     <section className="py-20 md:py-28">
@@ -45,7 +45,7 @@ export function HeroSection() {
             <div className="relative">
               <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-1">
                 <div className="bg-background rounded-xl overflow-hidden">
-                  <img 
+                  <Image 
                     src="https://images.pexels.com/photos/4145354/pexels-photo-4145354.jpeg" 
                     alt="Student learning online" 
                     className="w-full h-auto" 

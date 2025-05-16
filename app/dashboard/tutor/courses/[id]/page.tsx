@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, JSXElementConstructor, PromiseLikeOfReactNode, ReactElement, ReactNode, ReactPortal } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Header } from "@/components/dashboard/header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -9,15 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowLeft, Edit, Save, Trash2, Plus, BookOpen, CheckCircle, 
-  AlertCircle, HelpCircle, Move, GripVertical, Loader2,
-  FileEdit, Upload, X
+import {
+  ArrowLeft, Edit, Save, Trash2, BookOpen, CheckCircle,
+  AlertCircle, HelpCircle, GripVertical, Loader2, Upload, X
 } from "lucide-react";
 import courseService from "@/services/courseService";
 
@@ -30,7 +28,7 @@ export default function TutorCourseDetail() {
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [course, setCourse] = useState(null);
+  const [course, setCourse] = useState<any>(null);
   const [editMode, setEditMode] = useState(false);
   const [editedCourse, setEditedCourse] = useState({
     title: "",
@@ -38,8 +36,8 @@ export default function TutorCourseDetail() {
   });
   
   // Modal states
-  const [selectedLesson, setSelectedLesson] = useState(null);
-  const [selectedQuiz, setSelectedQuiz] = useState(null);
+  const [selectedLesson, setSelectedLesson] = useState<any>(null);
+  const [selectedQuiz, setSelectedQuiz] = useState<any>(null);
   const [isLessonModalOpen, setIsLessonModalOpen] = useState(false);
   const [isQuizModalOpen, setIsQuizModalOpen] = useState(false);
 
@@ -102,7 +100,7 @@ export default function TutorCourseDetail() {
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: { target: { name: any; value: any; }; }) => {
     const { name, value } = e.target;
     setEditedCourse({
       ...editedCourse,
@@ -111,7 +109,7 @@ export default function TutorCourseDetail() {
   };
 
   // For lesson reordering
-  const handleDragEnd = async (result) => {
+  const handleDragEnd = async (result:any) => {
     if (!result.destination) return;
     
     const items = Array.from(course.lessons);
@@ -119,7 +117,7 @@ export default function TutorCourseDetail() {
     items.splice(result.destination.index, 0, reorderedItem);
     
     // Update lesson order
-    const updatedLessons = items.map((lesson, index) => ({
+    const updatedLessons = items.map((lesson:any, index) => ({
       ...lesson,
       order: index + 1
     }));
@@ -139,10 +137,10 @@ export default function TutorCourseDetail() {
   };
 
   // Handle updating course content with new PDF
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState<any>(null);
   const [regenerating, setRegenerating] = useState(false);
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e:any) => {
     if (e.target.files && e.target.files[0]) {
       setSelectedFile(e.target.files[0]);
     }
@@ -185,13 +183,13 @@ export default function TutorCourseDetail() {
   };
 
   // Open lesson modal
-  const openLessonModal = (lesson) => {
+  const openLessonModal = (lesson:any) => {
     setSelectedLesson(lesson);
     setIsLessonModalOpen(true);
   };
 
   // Open quiz modal
-  const openQuizModal = (quiz, lesson) => {
+  const openQuizModal = (quiz:any, lesson:any) => {
     setSelectedQuiz({...quiz, lessonTitle: lesson.title});
     setIsQuizModalOpen(true);
   };
@@ -234,7 +232,7 @@ export default function TutorCourseDetail() {
               <AlertCircle className="h-12 w-12 text-destructive mb-4" />
               <h3 className="text-lg font-medium">Course not found</h3>
               <p className="text-muted-foreground text-center mt-2">
-                The course you're looking for doesn't exist or you don't have permission to view it.
+                The course you&#39;re looking for doesn&#39;t exist or you don&#39;t have permission to view it
               </p>
               <Button 
                 variant="default" 
@@ -323,7 +321,7 @@ export default function TutorCourseDetail() {
                   <div className="flex items-center">
                     <span className="mr-2">{course.lessons?.length || 0} lessons</span>
                     <span className="mx-2">•</span>
-                    <span>{course.lessons?.reduce((acc, lesson) => acc + (lesson.quizzes?.length || 0), 0)} quizzes</span>
+                    <span>{course.lessons?.reduce((acc:any, lesson:any) => acc + (lesson.quizzes?.length || 0), 0)} quizzes</span>
                   </div>
                 </div>
               </div>
@@ -446,7 +444,7 @@ export default function TutorCourseDetail() {
                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                         <AlertDialogDescription>
                           This action cannot be undone. This will permanently delete the course
-                          "{course.title}" and all its associated lessons and quizzes.
+                          &quot;{course.title}&quot; and all its associated lessons and quizzes.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
@@ -480,7 +478,63 @@ export default function TutorCourseDetail() {
                   </CardHeader>
                   <CardContent>
                     {course.lessons && course.lessons.length > 0 ? (
+                      
                       <DragDropContext onDragEnd={handleDragEnd}>
+                        <Droppable droppableId="lessons"></Droppable>
+                          {(provided) => (
+                            <div 
+                              {...provided.droppableProps}
+                              ref={provided.innerRef}
+                              className="space-y-2"
+                            >
+                              {course.lessons
+                                .sort((a, b) => a.order - b.order)
+                                .map((lesson, index) => (
+                                <Draggable 
+                                  key={`lesson-${lesson.id}`} 
+                                  draggableId={`lesson-${lesson.id}`} 
+                                  index={index}
+                                >
+                                  {(provided) => (
+                                    <div
+                                      ref={provided.innerRef}
+                                      {...provided.draggableProps}
+                                      className="flex items-center p-3 border rounded-md bg-background hover:bg-muted/50 transition-colors"
+                                    >
+                                      <div 
+                                        {...provided.dragHandleProps}
+                                        className="p-2 mr-2 rounded-md hover:bg-muted cursor-grab"
+                                      >
+                                        <GripVertical className="h-4 w-4 text-muted-foreground" />
+                                      </div>
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                          <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                                            Lesson {index + 1}
+                                          </Badge>
+                                          <h3 className="font-medium">{lesson.title}</h3>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                                          {lesson.content?.substring(0, 100)}...
+                                        </p>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Button 
+                                          variant="ghost" 
+                                          size="sm"
+                                          onClick={() => openLessonModal(lesson)}
+                                        >
+                                          <Edit className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  )}
+                                </Draggable>
+                              ))}
+                              {provided.placeholder}
+                            </div>
+                          )}
+                        </Droppable>
                         <Droppable droppableId="lessons">
                           {(provided) => (
                             <div 
@@ -559,11 +613,11 @@ export default function TutorCourseDetail() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {course.lessons && course.lessons.some((lesson) => lesson.quizzes?.length > 0) ? (
+                    {course.lessons && course.lessons.some((lesson:any) => lesson.quizzes?.length > 0) ? (
                       <div className="space-y-6">
                         {course.lessons
-                          .sort((a, b) => a.order - b.order)
-                          .map((lesson, lessonIndex) => (
+                          .sort((a: { order: number; }, b: { order: number; }) => a.order - b.order)
+                          .map((lesson: { quizzes: { id: any; title: any; questions: string | any[]; }[]; id: any; title: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; }, lessonIndex: number) => (
                           lesson.quizzes && lesson.quizzes.length > 0 ? (
                             <div key={`lesson-quizzes-${lesson.id}`} className="space-y-3">
                               <h3 className="font-medium flex items-center">
@@ -573,7 +627,7 @@ export default function TutorCourseDetail() {
                                 {lesson.title}
                               </h3>
                               <div className="space-y-2 ml-8">
-                                {lesson.quizzes.map((quiz, quizIndex) => (
+                                {lesson.quizzes.map((quiz: { id: any; title: any; questions: string | any[]; }, quizIndex: number) => (
                                   <div 
                                     key={`quiz-${quiz.id}`}
                                     className="flex items-center justify-between p-3 border rounded-md bg-background hover:bg-muted/50 transition-colors"
@@ -646,7 +700,7 @@ export default function TutorCourseDetail() {
               <div className="mt-6">
                 <h3 className="text-lg font-medium mb-4">Associated Quizzes</h3>
                 <div className="space-y-2">
-                  {selectedLesson?.quizzes.map((quiz) => (
+                  {selectedLesson?.quizzes.map((quiz:any) => (
                     <div 
                       key={`modal-quiz-${quiz.id}`}
                       className="p-3 border rounded-md hover:bg-muted/50 transition-colors cursor-pointer"
@@ -709,14 +763,14 @@ export default function TutorCourseDetail() {
             
             {selectedQuiz?.questions && selectedQuiz?.questions.length > 0 ? (
               <div className="space-y-8">
-                {selectedQuiz.questions.map((question, questionIndex) => (
+                {selectedQuiz.questions.map((question: { id: any; text: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; options: any[]; }, questionIndex: number) => (
                   <div key={`quiz-question-${question.id}`} className="border rounded-md p-4">
                     <h4 className="font-medium mb-3">
                       Question {questionIndex + 1}: {question.text}
                     </h4>
                     
                     <div className="space-y-2 ml-2">
-                      {question.options.map((option) => (
+                      {question.options.map((option:any) => (
                         <div key={`option-${option.id}`} className="flex items-center gap-2">
                           <Badge 
                             variant="outline" 
