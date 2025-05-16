@@ -2,154 +2,51 @@
 
 import { useEffect, useState } from "react";
 import { Header } from "@/components/dashboard/header";
-import { StatsCard } from "@/components/dashboard/stats-card";
 import { CourseCard } from "@/components/dashboard/course-card";
-import { LiveClassCard } from "@/components/dashboard/live-class-card";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Course, LiveClass, Tutor } from "@/lib/types";
+import { Tutor } from "@/lib/types";
+import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import courseService from "@/services/courseService";
 // import { DEMO_COURSES, DEMO_LIVE_CLASSES } from "@/lib/constants";
-import { 
-  BookOpen, 
-  Users, 
-  Video,
-  FileUp,
-  BarChart3,
-  Star,
-  CalendarPlus,
-  Clock,
-  FileCheck,
-  ArrowUpRight,
-  ChevronRight
-} from "lucide-react";
+import { ArrowUpRight, Plus, FileText, Upload, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import CourseSummaryChart from "@/components/dashboard/summary-card";
+import StudentEngagementChart from "@/components/dashboard/student-engagement-card";
 
 
 
-const DEMO_COURSES: Course[] = [
-  {
-    id: "course-1",
-    title: "Introduction to Programming",
-    description: "Learn the basics of programming.",
-    tutor: "John Doe",
-    thumbnail: "/images/programming-course.jpg",
-    totalChapters: 10,
-    completedChapters: 5,
-    progress: 50,
-    status: "in-progress",
-    category: "Programming",
-    level: "Beginner",
-    students: 120,
-    duration: "120",
-    chapters: [],
-  },
-  {
-    id: "course-2",
-    title: "Advanced React",
-    description: "Master React with advanced concepts.",
-    tutor: "Jane Smith",
-    thumbnail: "/images/react-course.jpg",
-    totalChapters: 15,
-    completedChapters: 15,
-    progress: 100,
-    status: "completed",
-    category: "Web Development",
-    level: "Advanced",
-    students: 80,
-    duration: "180",
-    chapters: [],
-  },
-];
-
-// Adjusted DEMO_LIVE_CLASSES to match the expected LiveClass type
-const DEMO_LIVE_CLASSES: LiveClass[] = [
-  {
-    id: "class-1",
-    title: "Introduction to React",
-    course: "Web Development",
-    tutor: "John Doe",
-    date: "2023-11-25T10:00:00Z",
-    duration: 120,
-    status: "upcoming",
-    attendees: 50,
-    thumbnail: "/images/react-class.jpg",
-  },
-  {
-    id: "class-2",
-    title: "Advanced TypeScript",
-    course: "Programming",
-    tutor: "Jane Smith",
-    date: "2023-11-20T14:00:00Z",
-    duration: 90,
-    status: "completed",
-    attendees: 30,
-    thumbnail: "/images/typescript-class.jpg",
-    recording: "/recordings/typescript-class.mp4",
-  },
-];
-
-
-
-// Sample data for the chart
-const engagementData = [
-  { date: 'Mon', students: 45 },
-  { date: 'Tue', students: 52 },
-  { date: 'Wed', students: 49 },
-  { date: 'Thu', students: 65 },
-  { date: 'Fri', students: 59 },
-  { date: 'Sat', students: 70 },
-  { date: 'Sun', students: 74 },
-];
 
 export default function TutorDashboard() {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [liveClasses, setLiveClasses] = useState<LiveClass[]>([]);
-  const [pendingTasks, setPendingTasks] = useState<any[]>([]);
+  const [courses, setCourses] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [tutor, setTutor] = useState<Tutor | null>(null);
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [courseSummary, setCourseSummary] = useState<any[]>([]);
+  const [summaryLoading, setSummaryLoading] = useState(true);
+  const [newCourse, setNewCourse] = useState({
+    title: "",
+    description: ""
+  });
+
 
   useEffect(() => {
-    // Simulate loading data - in a real app, this would be API calls
-    setCourses(DEMO_COURSES);
-    setLiveClasses(DEMO_LIVE_CLASSES);
-    
-    // Sample pending tasks data
-    setPendingTasks([
-      { 
-        id: 'task-1',
-        type: 'material',
-        title: 'Upload lecture slides for JavaScript Functions', 
-        dueDate: '2023-11-25T23:59:00Z'
-      },
-      {
-        id: 'task-2',
-        type: 'quiz',
-        title: 'Create quiz for DOM Manipulation chapter',
-        dueDate: '2023-11-26T23:59:00Z'
-      },
-      {
-        id: 'task-3',
-        type: 'review',
-        title: 'Review student submissions for final project',
-        dueDate: '2023-11-28T23:59:00Z'
-      }
-    ]);
-    
-    // Check for user info in localStorage
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      if (user.role === "tutor") {
-        setTutor(user as Tutor);
-      }
-    }
-  }, []);
+      fetchCourses();
+      fetchCoursesSummary();
 
-  // Get upcoming live classes (sorted by date)
-  const upcomingLiveClasses = liveClasses
-    .filter(lc => lc.status === "upcoming" || lc.status === "live")
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      const storedUser = localStorage.getItem("eduSphereUser");
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        if (user.role === "tutor") {
+          setTutor(user as Tutor);
+        }
+      }
+    }, []);
+
 
   // Total students across all courses
   const totalStudents = courses.reduce((sum, course) => sum + (course.students || 0), 0);
@@ -157,23 +54,110 @@ export default function TutorDashboard() {
   // Count of active courses
   const totalCourses = courses.length;
 
-  // Format due date with relative time
-  const formatDueDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffDays = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+  const fetchCourses = async () => {
+      try {
+        setLoading(true);
+        const response = await courseService.getCourses();
+        // @ts-ignore
+        setCourses(response?.data || []); 
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+        toast.error("Failed to load courses. Please try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+
+    const fetchCoursesSummary = async () => {
+      try {
+        setSummaryLoading(true);
+        const response = await courseService.getCoursesSummary();
+        
+        // Set course summary data
+        setCourseSummary(response || []);
+        console.log("Course summary fetched:", response);
+      } catch (error) {
+        console.error("Error fetching course summary:", error);
+        toast.error("Failed to load course performance data.");
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setNewCourse({
+      ...newCourse,
+      [name]: value
+    });
+  };
+
+
+
+
+  const handleCreateCourse = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    if (diffDays === 0) return "Due today";
-    if (diffDays === 1) return "Due tomorrow";
-    if (diffDays > 1 && diffDays < 7) return `Due in ${diffDays} days`;
-    return `Due on ${new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(date)}`;
+    if (!selectedFile) {
+      toast.error("Please select a PDF file");
+      return;
+    }
+
+    if (!newCourse.title.trim() || !newCourse.description.trim()) {
+      toast.error( "Please fill in all fields");
+      return;
+    }
+
+    try {
+      setUploadLoading(true);
+      
+      const formData = new FormData();
+      formData.append('title', newCourse.title);
+      formData.append('description', newCourse.description);
+      formData.append('pdf_file', selectedFile);
+      
+      const response = await courseService.createCourseForm(formData);
+      
+      // Reset form
+      setNewCourse({
+        title: "",
+        description: ""
+      });
+      setSelectedFile(null);
+      
+      // Add new course to the list or refetch courses
+      fetchCourses();
+      fetchCoursesSummary();
+      
+      toast.success("Course created successfully. Content generation in progress.");
+      // Close the dialog - this needs to be handled by the parent component
+      const closeBtn = document.getElementById('close-dialog-btn');
+      if (closeBtn) {
+        closeBtn.click();
+      }
+      
+    } catch (error) {
+      console.error("Error creating course:", error);
+      toast.error("Failed to create course. Please try again.");
+    } finally {
+      setUploadLoading(false);
+    }
   };
 
   return (
     <div>
       <Header title="Tutor Dashboard" />
       <main className="container mx-auto px-4 py-6">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {/* <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <StatsCard
             title="Total Courses"
             value={totalCourses}
@@ -185,100 +169,117 @@ export default function TutorDashboard() {
             icon={<Users className="h-5 w-5" />}
             change={{ value: 12, isPositive: true }}
           />
-          <StatsCard
-            title="Live Sessions"
-            value={upcomingLiveClasses.length}
-            description="Upcoming sessions"
-            icon={<Video className="h-5 w-5" />}
-          />
-          <StatsCard
-            title="Tutor Rating"
-            value="4.8/5"
-            icon={<Star className="h-5 w-5" />}
-          />
-        </div>
+        </div> */}
 
         <div className="mt-8 grid gap-6 md:grid-cols-3">
-          <div className="md:col-span-2">
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>Student Engagement</CardTitle>
-                <CardDescription>Daily active students in your courses</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={engagementData}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <Tooltip />
-                      <Area 
-                        type="monotone" 
-                        dataKey="students" 
-                        stroke="hsl(var(--chart-1))" 
-                        fill="hsl(var(--chart-1) / 0.2)" 
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
+          <div className="md:col-span-3">
+            <StudentEngagementChart />
           </div>
-
-          <div>
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>Pending Tasks</CardTitle>
-                <CardDescription>Tasks that need your attention</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-4">
-                  {pendingTasks.map((task, index) => (
-                    <li key={task.id} className="border rounded-lg p-3 hover:bg-muted/30 transition-colors">
-                      <div className="flex gap-3">
-                        <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                          task.type === 'material' 
-                            ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300' 
-                            : task.type === 'quiz'
-                              ? 'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300'
-                              : 'bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-300'
-                        }`}>
-                          {task.type === 'material' ? (
-                            <FileUp className="h-5 w-5" />
-                          ) : task.type === 'quiz' ? (
-                            <FileCheck className="h-5 w-5" />
-                          ) : (
-                            <Clock className="h-5 w-5" />
-                          )}
-                        </div>
-                        <div>
-                          <h4 className="font-medium">{task.title}</h4>
-                          <p className="text-xs mt-1 font-medium text-red-500">
-                            {formatDueDate(task.dueDate)}
-                          </p>
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-                <Button variant="ghost" className="w-full mt-4 text-sm">
-                  View All Tasks <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              </CardContent>
-            </Card>
+          
+          <div className="md:col-span-3">
+            <CourseSummaryChart courseSummary={courseSummary} loading={summaryLoading} />
           </div>
         </div>
 
         <div className="mt-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-semibold">Your Courses</h2>
-            <Link href="/dashboard/tutor/courses/new">
-              <Button className="gap-2">
-                <BookOpen className="h-4 w-4" /> Create New Course
-              </Button>
-            </Link>
-          </div>
+            
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add New Course
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Create New Course</DialogTitle>
+                  <DialogDescription>
+                    Add a new course with title, description, and a PDF file that will be used to generate lessons and quizzes.
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <form onSubmit={handleCreateCourse}>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="title">Course Title</Label>
+                      <Input
+                        id="title"
+                        name="title"
+                        placeholder="Enter course title"
+                        value={newCourse.title}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea
+                        id="description"
+                        name="description"
+                        placeholder="Enter course description"
+                        value={newCourse.description}
+                        onChange={handleInputChange}
+                        className="min-h-[100px]"
+                        required
+                      />
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label htmlFor="pdf">Course Content (PDF)</Label>
+                      <div className="border border-input rounded-md p-2">
+                        <Label 
+                          htmlFor="pdf-upload" 
+                          className="flex flex-col items-center justify-center cursor-pointer p-4 border-2 border-dashed rounded-md hover:bg-muted/50 transition-colors"
+                        >
+                          {selectedFile ? (
+                            <div className="flex items-center gap-2 text-sm">
+                              <FileText className="h-4 w-4" />
+                              {selectedFile.name}
+                            </div>
+                          ) : (
+                            <>
+                              <Upload className="h-8 w-8 mb-2 text-muted-foreground" />
+                              <span className="text-sm text-muted-foreground">Click to upload PDF file</span>
+                            </>
+                          )}
+                        </Label>
+                        <Input
+                          id="pdf-upload"
+                          type="file"
+                          accept=".pdf"
+                          onChange={handleFileChange}
+                          className="hidden"
+                          required
+                        />
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        This PDF will be used to automatically generate course lessons and quizzes.
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <DialogFooter>
+                    <Button id="close-dialog-btn" type="button" variant="outline">
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={uploadLoading}>
+                      {uploadLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Creating...
+                        </>
+                      ) : (
+                        "Create Course"
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+        </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {courses.slice(0, 3).map((course) => (
               <CourseCard key={course.id} course={course} userRole="tutor" />
@@ -288,29 +289,6 @@ export default function TutorDashboard() {
             <Link href="/dashboard/tutor/courses">
               <Button variant="outline">
                 View All Courses <ArrowUpRight className="h-4 w-4 ml-2" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        <div className="mt-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold">Upcoming Live Classes</h2>
-            <Link href="/dashboard/tutor/live-classes/new">
-              <Button className="gap-2">
-                <CalendarPlus className="h-4 w-4" /> Schedule Class
-              </Button>
-            </Link>
-          </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {upcomingLiveClasses.slice(0, 3).map((liveClass) => (
-              <LiveClassCard key={liveClass.id} liveClass={liveClass} />
-            ))}
-          </div>
-          <div className="mt-4 text-center">
-            <Link href="/dashboard/tutor/live-classes">
-              <Button variant="outline">
-                View All Classes <ArrowUpRight className="h-4 w-4 ml-2" />
               </Button>
             </Link>
           </div>

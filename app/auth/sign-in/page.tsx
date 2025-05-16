@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BookOpen, EyeIcon, EyeOffIcon } from "lucide-react";
@@ -19,8 +19,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Separator } from "@/components/ui/separator";
-import { DEMO_USERS } from "@/lib/constants";
 import { toast } from "sonner";
+import authService from "@/services/authService";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -33,7 +33,17 @@ export default function SignIn() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const redirectTo = searchParams.get("redirectTo") || "";
+
+  // Check if already logged in on mount
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      const role = authService.getUserRole();
+      console.log('Already authenticated as:', role);
+      handleRedirectByRole(role);
+    }
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -43,28 +53,72 @@ export default function SignIn() {
     },
   });
 
-  const onSubmit = (values: FormValues) => {
-    // Simulate authentication with demo users
-    const { email, password } = values;
+  // Function to handle redirection based on role
+  const handleRedirectByRole = (role: string | null) => {
+    console.log('Redirecting based on role:', role);
     
-    if (email === DEMO_USERS.admin.email && password === DEMO_USERS.admin.password) {
-      // Admin login
-      localStorage.setItem("user", JSON.stringify(DEMO_USERS.admin));
-      toast.success("Signed in as Admin");
-      router.push("/dashboard/admin");
-    } else if (email === DEMO_USERS.tutor.email && password === DEMO_USERS.tutor.password) {
-      // Tutor login
-      localStorage.setItem("user", JSON.stringify(DEMO_USERS.tutor));
-      toast.success("Signed in as Tutor");
-      router.push("/dashboard/tutor");
-    } else if (email === DEMO_USERS.student.email && password === DEMO_USERS.student.password) {
-      // Student login
-      localStorage.setItem("user", JSON.stringify(DEMO_USERS.student));
-      toast.success("Signed in as Student");
-      router.push("/dashboard/student");
-    } else {
-      toast.error("Invalid email or password");
+    // If we have a specific redirect URL, use it
+    if (redirectTo) {
+      console.log('Redirecting to specified path:', redirectTo);
+      router.push(redirectTo);
+      return;
     }
+    
+    // Otherwise, redirect based on role
+    let redirectPath = '/dashboard';
+    
+    if (role === 'admin') {
+      redirectPath = '/dashboard/admin';
+    } else if (role === 'tutor') {
+      redirectPath = '/dashboard/tutor';
+    } else if (role === 'student') {
+      redirectPath = '/dashboard/student';
+    }
+    
+    console.log('Redirecting to path:', redirectPath);
+    router.push(redirectPath);
+  };
+
+  const onSubmit = async (values: FormValues) => {
+    const { email, password } = values;
+    setIsLoading(true);
+    
+    try {
+      const userData = await authService.login(email, password);
+      console.log('Login successful - User data:', userData);
+      
+      // Get role from user data
+      const role = userData.role || userData.app_level_role;
+      toast.success(`Signed in as ${role || 'user'}`);
+      
+      // Set a flag in session storage
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('loginSuccess', 'true');
+      }
+      
+      // Add small delay before redirect to ensure localStorage is updated
+      setTimeout(() => {
+        handleRedirectByRole(role);
+      }, 500);
+    } catch (error) {
+      toast.error("Failed to sign in. Please check your credentials.");
+      console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Demo login function
+  const loginWithDemo = (role: 'admin' | 'tutor' | 'student') => {
+    const demoCredentials = {
+      admin: { email: "admin@edusphere.com", password: "admin123" },
+      tutor: { email: "tutor@edusphere.com", password: "tutor123" },
+      student: { email: "student@edusphere.com", password: "student123" },
+    };
+    
+    form.setValue("email", demoCredentials[role].email);
+    form.setValue("password", demoCredentials[role].password);
+    form.handleSubmit(onSubmit)();
   };
 
   return (
@@ -126,8 +180,8 @@ export default function SignIn() {
             )}
           />
 
-          <Button type="submit" className="w-full">
-            Sign In
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
       </Form>
@@ -143,17 +197,17 @@ export default function SignIn() {
         </div>
         
         <div className="mt-6 grid grid-cols-1 gap-4 text-sm">
-          <div className="border rounded-md p-3">
+          <div className="border rounded-md p-3 cursor-pointer hover:border-primary" onClick={() => loginWithDemo("admin")}>
             <div className="font-medium mb-1">Admin</div>
             <div className="text-muted-foreground mb-1">Email: admin@edusphere.com</div>
             <div className="text-muted-foreground">Password: admin123</div>
           </div>
-          <div className="border rounded-md p-3">
+          <div className="border rounded-md p-3 cursor-pointer hover:border-primary" onClick={() => loginWithDemo("tutor")}>
             <div className="font-medium mb-1">Tutor</div>
             <div className="text-muted-foreground mb-1">Email: tutor@edusphere.com</div>
             <div className="text-muted-foreground">Password: tutor123</div>
           </div>
-          <div className="border rounded-md p-3">
+          <div className="border rounded-md p-3 cursor-pointer hover:border-primary" onClick={() => loginWithDemo("student")}>
             <div className="font-medium mb-1">Student</div>
             <div className="text-muted-foreground mb-1">Email: student@edusphere.com</div>
             <div className="text-muted-foreground">Password: student123</div>

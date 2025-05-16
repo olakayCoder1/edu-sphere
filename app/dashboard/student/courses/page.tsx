@@ -13,43 +13,9 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search } from "lucide-react";
-import { Course, LiveClass, Student } from "@/lib/types";
-// import { DEMO_COURSES } from "@/lib/constants";
+import { Course, Student } from "@/lib/types";
+import courseService from "@/services/courseService";
 
-const DEMO_COURSES: Course[] = [
-  {
-    id: "course-1",
-    title: "Introduction to Programming",
-    description: "Learn the basics of programming.",
-    tutor: "John Doe",
-    thumbnail: "/images/programming-course.jpg",
-    totalChapters: 10,
-    completedChapters: 5,
-    progress: 50,
-    status: "in-progress",
-    category: "Programming",
-    level: "Beginner",
-    students: 120,
-    duration: "120",
-    chapters: [],
-  },
-  {
-    id: "course-2",
-    title: "Advanced React",
-    description: "Master React with advanced concepts.",
-    tutor: "Jane Smith",
-    thumbnail: "/images/react-course.jpg",
-    totalChapters: 15,
-    completedChapters: 15,
-    progress: 100,
-    status: "completed",
-    category: "Web Development",
-    level: "Advanced",
-    students: 80,
-    duration: "180",
-    chapters: [],
-  },
-];
 
 
 export default function StudentCourses() {
@@ -59,11 +25,21 @@ export default function StudentCourses() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [student, setStudent] = useState<Student | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading courses
-    setCourses(DEMO_COURSES);
-    setFilteredCourses(DEMO_COURSES);
+    // Fetch courses from the API
+    const fetchCourses = async () => {
+      setIsLoading(true);
+      try {
+        const courses_response = await courseService.getCourses();
+        setCourses(courses_response?.data || []);
+      } catch (error) {
+        console.error("Error fetching courses:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
     // Check for user info in localStorage
     const storedUser = localStorage.getItem("user");
@@ -73,6 +49,8 @@ export default function StudentCourses() {
         setStudent(user as Student);
       }
     }
+    
+    fetchCourses();
   }, []);
 
   // Get the enrolled courses for current student
@@ -116,8 +94,8 @@ export default function StudentCourses() {
   // Group courses by status for tabs
   const coursesByStatus = {
     all: filteredCourses,
-    "in-progress": filteredCourses.filter(course => course.status === "in-progress"),
-    "not-started": filteredCourses.filter(course => course.status === "not-started"),
+    "in-progress": filteredCourses.filter(course => course.status === "in_progress"),
+    "not-started": filteredCourses.filter(course => course.status === "not_started"),
     completed: filteredCourses.filter(course => course.status === "completed"),
   };
 
@@ -164,26 +142,32 @@ export default function StudentCourses() {
               <TabsTrigger value="completed">Completed ({coursesByStatus.completed.length})</TabsTrigger>
             </TabsList>
             
-            {Object.entries(coursesByStatus).map(([status, courses]) => (
-              <TabsContent key={status} value={status} className="mt-0">
-                {courses.length > 0 ? (
-                  <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {courses.map((course) => (
-                      <CourseCard key={course.id} course={course} userRole="student" />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <h3 className="text-xl font-semibold mb-2">No courses found</h3>
-                    <p className="text-muted-foreground">
-                      {searchTerm || categoryFilter !== "all"
-                        ? "Try adjusting your filters"
-                        : "You don't have any courses in this category yet"}
-                    </p>
-                  </div>
-                )}
-              </TabsContent>
-            ))}
+            {isLoading ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Loading courses...</p>
+              </div>
+            ) : (
+              Object.entries(coursesByStatus).map(([status, courses]) => (
+                <TabsContent key={status} value={status} className="mt-0">
+                  {courses.length > 0 ? (
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                      {courses.map((course) => (
+                        <CourseCard key={course.id} course={course} userRole="student" />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <h3 className="text-xl font-semibold mb-2">No courses found</h3>
+                      <p className="text-muted-foreground">
+                        {searchTerm || categoryFilter !== "all"
+                          ? "Try adjusting your filters"
+                          : "You don't have any courses in this category yet"}
+                      </p>
+                    </div>
+                  )}
+                </TabsContent>
+              ))
+            )}
           </Tabs>
         </div>
       </main>

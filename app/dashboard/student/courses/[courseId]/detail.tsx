@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -19,54 +18,54 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { Course, Chapter, Quiz } from "@/lib/types";
-import { DEMO_QUIZ,DEMO_COURSES } from "@/lib/constants";
+import courseService from "@/services/courseService"; // Import courseService for API calls
 
+// Updated type definitions to match the actual data structure
+type Option = {
+  is_correct: Option;
+  id: number;
+  text: string;
+}
 
+type Question = {
+  id: number;
+  text: string;
+  options: Option[];
+}
 
-// const DEMO_COURSES: Course[] = [
-//   {
-//     id: "course-1",
-//     title: "Introduction to Programming",
-//     description: "Learn the basics of programming.",
-//     tutor: "John Doe",
-//     thumbnail: "/images/programming-course.jpg",
-//     totalChapters: 10,
-//     completedChapters: 5,
-//     progress: 50,
-//     status: "in-progress",
-//     category: "Programming",
-//     level: "Beginner",
-//     students: 120,
-//     duration: "120",
-//     chapters: [],
-//   },
-//   {
-//     id: "course-2",
-//     title: "Advanced React",
-//     description: "Master React with advanced concepts.",
-//     tutor: "Jane Smith",
-//     thumbnail: "/images/react-course.jpg",
-//     totalChapters: 15,
-//     completedChapters: 15,
-//     progress: 100,
-//     status: "completed",
-//     category: "Web Development",
-//     level: "Advanced",
-//     students: 80,
-//     duration: "180",
-//     chapters: [],
-//   },
-// ];
+type Quiz = {
+  id: number;
+  title: string;
+  questions: Question[];
+  passing_score: number;
+  timeLimit?: number; // Added for UI compatibility
+}
 
+type Lesson = {
+  id: number;
+  title: string;
+  content: string;
+  order: number;
+  quizzes: Quiz[];
+  completion_status: "completed" | "in_progress" | "not_started";
+}
 
+type Course = {
+  id: number;
+  title: string;
+  description: string;
+  lessons: Lesson[];
+  created_at: string;
+  updated_at: string;
+  user: string;
+  progress?: number; // Added for UI compatibility
+}
 
-
-export default function CourseDetail() {
+export default function CourseDetail({ courseData }: { courseData: Course }) {
   const params = useParams();
   const router = useRouter();
   const [course, setCourse] = useState<Course | null>(null);
-  const [activeChapter, setActiveChapter] = useState<Chapter | null>(null);
+  const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
   const [quizTab, setQuizTab] = useState("preview");
   const [quizStarted, setQuizStarted] = useState(false);
@@ -75,39 +74,50 @@ export default function CourseDetail() {
   const [quizScore, setQuizScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [quizTimer, setQuizTimer] = useState<NodeJS.Timeout | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false); // State for tracking API submission
 
+  // Initialize the course data
   useEffect(() => {
-    // Fetch course data
-    const courseId = params.courseId as string;
-    const foundCourse = DEMO_COURSES.find(c => c.id === courseId);
-    if (foundCourse) {
-      setCourse(foundCourse as Course);
-      // Set first chapter as active by default
-      if (foundCourse.chapters.length > 0) {
-        setActiveChapter(foundCourse.chapters[0]);   
-        // If it's the first chapter, load the quiz sample
-        if (foundCourse.chapters[0].id === "ch-1") {
-          setActiveQuiz(DEMO_QUIZ);
-        } else {
-          setActiveQuiz(null);
-        }
+    if (courseData) {
+      // Calculate progress based on completed lessons
+      const completedCount = courseData.lessons.filter(
+        lesson => lesson.completion_status === "completed"
+      ).length;
+      const totalLessons = courseData.lessons.length;
+      const calculatedProgress = totalLessons > 0 
+        ? Math.round((completedCount / totalLessons) * 100) 
+        : 0;
+
+      setCourse({
+        ...courseData,
+        progress: courseData.progress || calculatedProgress
+      });
+      
+      // Set the first lesson as active by default
+      if (courseData.lessons && courseData.lessons.length > 0) {
+        handleLessonSelect(courseData.lessons[0]);
       }
     }
-  }, [params.courseId]);
+  }, [courseData]);
 
-  const handleChapterSelect = (chapter: Chapter) => {
-    setActiveChapter(chapter);
+  const handleLessonSelect = (lesson: Lesson) => {
+    setActiveLesson(lesson);
     
-    // Reset quiz state when changing chapters
+    // Reset quiz state when changing lessons
     setQuizStarted(false);
     setQuizAnswers([]);
     setQuizSubmitted(false);
     setQuizScore(0);
     if (quizTimer) clearInterval(quizTimer);
     
-    // Load quiz for the selected chapter (demo only has quiz for first chapter)
-    if (chapter.id === "ch-1") {
-      setActiveQuiz(DEMO_QUIZ);
+    // Set the first quiz as active if available
+    if (lesson?.quizzes && lesson.quizzes.length > 0) {
+      // Add timeLimit property if not present
+      const quizWithTimeLimit = {
+        ...lesson.quizzes[0],
+        timeLimit: lesson.quizzes[0].timeLimit || 3 // Default 3 minutes
+      };
+      setActiveQuiz(quizWithTimeLimit);
     } else {
       setActiveQuiz(null);
     }
@@ -140,29 +150,107 @@ export default function CourseDetail() {
     setQuizAnswers(newAnswers);
   };
 
-  const submitQuiz = () => {
+  // Function to call the API to mark lesson as completed
+  const markLessonAsCompleted = async (courseId: number, lessonId: number) => {
+    setIsSubmitting(true);
+    try {
+      // Call the API endpoint to mark the lesson as completed
+      await courseService.completeLesson(courseId, lessonId);
+      updateLessonCompletionStatus(lessonId, "completed");    
+
+    } catch (error) {
+      console.error("Error marking lesson as completed:", error);
+      // Handle error - you could show a notification/alert here
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const submitQuiz = async () => {
     if (quizTimer) clearInterval(quizTimer);
     
     // Calculate score
     let correctAnswers = 0;
-    if (activeQuiz) {
+    if (activeQuiz && activeLesson && course) {
       activeQuiz.questions.forEach((question, index) => {
-        if (quizAnswers[index] === question.correctAnswer) {
-          correctAnswers++;
+        // Check if the selected option is correct by finding the option with is_correct=true
+        const selectedOptionIndex = quizAnswers[index];
+        console.log(selectedOptionIndex)
+        if (selectedOptionIndex >= 0) {
+          const selectedOption = question.options[selectedOptionIndex];
+          console.log(selectedOption.is_correct)
+          console.log(selectedOption.text)
+          if (selectedOption && selectedOption.is_correct) {
+            correctAnswers++;
+          }
         }
       });
       
       const score = Math.round((correctAnswers / activeQuiz.questions.length) * 100);
+      console.log(score)
       setQuizScore(score);
+      
+      // If score is greater than or equal to passing score, mark lesson as completed
+      if (score >= activeQuiz.passing_score) {
+        // Make API call to mark lesson as completed
+        await markLessonAsCompleted(course.id, activeLesson.id);
+      }
     }
     
     setQuizSubmitted(true);
   };
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  // Helper function to get completion status badge variant
+  const getCompletionBadgeVariant = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "default";
+      case "in_progress":
+        return "secondary";
+      default:
+        return "outline";
+    }
+  };
+
+  // Helper function to get completion status display text
+  const getCompletionStatusText = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "Completed";
+      case "in_progress":
+        return "In Progress";
+      default:
+        return "Not Started";
+    }
+  };
+
+  // Update lesson completion status
+  const updateLessonCompletionStatus = (lessonId: number, newStatus: "completed" | "in_progress" | "not_started") => {
+    if (!course) return;
+    
+    const updatedLessons = course.lessons.map(lesson => 
+      lesson.id === lessonId 
+        ? { ...lesson, completion_status: newStatus } 
+        : lesson
+    );
+    
+    // Recalculate progress
+    const completedCount = updatedLessons.filter(
+      lesson => lesson.completion_status === "completed"
+    ).length;
+    const totalLessons = updatedLessons.length;
+    const calculatedProgress = Math.round((completedCount / totalLessons) * 100);
+    
+    setCourse({
+      ...course,
+      lessons: updatedLessons,
+      progress: calculatedProgress
+    });
   };
 
   if (!course) {
@@ -195,7 +283,7 @@ export default function CourseDetail() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Sidebar - Chapter List */}
+          {/* Left Sidebar - Lesson List */}
           <div className="lg:col-span-1">
             <Card>
               <CardHeader className="pb-3">
@@ -207,22 +295,26 @@ export default function CourseDetail() {
                     <span className="text-sm font-medium">Your Progress</span>
                     <span className="text-sm font-medium">{course.progress || 0}%</span>
                   </div>
-                  {/* <Progress value={course.progress || 0} className="h-2" /> */}
+                  <Progress value={course.progress || 0} className="h-2" />
                 </div>
                 <ul className="divide-y">
-                  {course.chapters.map((chapter, index) => (
-                    <li key={chapter.id}>
+                  {course.lessons.map((lesson, index) => (
+                    <li key={lesson.id}>
                       <button
                         className={cn(
                           "w-full text-left p-4 flex items-start gap-3 hover:bg-muted/50 transition-colors",
-                          activeChapter?.id === chapter.id && "bg-muted"
+                          activeLesson?.id === lesson.id && "bg-muted"
                         )}
-                        onClick={() => handleChapterSelect(chapter)}
+                        onClick={() => handleLessonSelect(lesson)}
                       >
                         <div className="mt-0.5">
-                          {chapter.isCompleted ? (
+                          {lesson.completion_status === "completed" ? (
                             <div className="h-6 w-6 rounded-full bg-green-100 text-green-600 flex items-center justify-center">
                               <CheckCircle className="h-4 w-4" />
+                            </div>
+                          ) : lesson.completion_status === "in_progress" ? (
+                            <div className="h-6 w-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center">
+                              <PlayCircle className="h-4 w-4" />
                             </div>
                           ) : (
                             <div className="h-6 w-6 rounded-full border border-muted-foreground/30 flex items-center justify-center text-xs font-medium text-muted-foreground">
@@ -231,12 +323,12 @@ export default function CourseDetail() {
                           )}
                         </div>
                         <div>
-                          <h3 className="font-medium">{chapter.title}</h3>
+                          <h3 className="font-medium">{lesson.title}</h3>
                           <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                             <span className="flex items-center">
                               <BookOpen className="h-3.5 w-3.5 mr-1" /> Lesson
                             </span>
-                            {chapter.id === "ch-1" && (
+                            {lesson.quizzes && lesson.quizzes.length > 0 && (
                               <span className="flex items-center">
                                 <Award className="h-3.5 w-3.5 mr-1" /> Quiz
                               </span>
@@ -253,18 +345,18 @@ export default function CourseDetail() {
 
           {/* Right Content Area */}
           <div className="lg:col-span-2">
-            {activeChapter && (
+            {activeLesson && (
               <Card>
                 <CardHeader className="pb-3">
                   <div className="flex justify-between items-center">
                     <Badge variant="outline" className="mb-2">
-                      Chapter {course.chapters.findIndex(ch => ch.id === activeChapter.id) + 1}/{course.chapters.length}
+                      Lesson {course.lessons.findIndex(l => l.id === activeLesson.id) + 1}/{course.lessons.length}
                     </Badge>
-                    <Badge variant={activeChapter.isCompleted ? "default" : "outline"}>
-                      {activeChapter.isCompleted ? "Completed" : "In Progress"}
+                    <Badge variant={getCompletionBadgeVariant(activeLesson.completion_status)}>
+                      {getCompletionStatusText(activeLesson.completion_status)}
                     </Badge>
                   </div>
-                  <CardTitle>{activeChapter.title}</CardTitle>
+                  <CardTitle>{activeLesson.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="content">
@@ -280,69 +372,48 @@ export default function CourseDetail() {
                       )}
                     </TabsList>
                     <TabsContent value="content">
-                      {/* Sample content for demo */}
                       <div className="space-y-4">
-                        {activeChapter.id === "ch-1" ? (
-                          <>
-                            <h2 className="text-xl font-semibold">Introduction to HTML</h2>
-                            <p>HTML (Hypertext Markup Language) is the standard markup language for documents designed to be displayed in a web browser.</p>
-                            
-                            <div className="aspect-video bg-muted rounded-lg flex items-center justify-center mb-4">
-                              <Button variant="outline" size="lg" className="gap-2">
-                                <PlayCircle className="h-5 w-5" /> Watch Video Lesson
-                              </Button>
-                            </div>
-                            
-                            <h3 className="text-lg font-medium mt-6">Basic Structure</h3>
-                            <p>Every HTML document has a required structure that includes the following declaration and elements:</p>
-                            
-                            <pre className="bg-muted p-4 rounded-md overflow-x-auto text-sm">
-                              <code>{`<!DOCTYPE html>
-<html>
-  <head>
-    <title>Page Title</title>
-  </head>
-  <body>
-    <h1>My First Heading</h1>
-    <p>My first paragraph.</p>
-  </body>
-</html>`}</code>
-                            </pre>
-                            
-                            <h3 className="text-lg font-medium mt-6">Common HTML Elements</h3>
-                            <ul className="list-disc pl-6 space-y-2">
-                              <li><strong>Headings</strong>: <code>&lt;h1&gt;</code> to <code>&lt;h6&gt;</code></li>
-                              <li><strong>Paragraphs</strong>: <code>&lt;p&gt;</code></li>
-                              <li><strong>Links</strong>: <code>&lt;a&gt;</code></li>
-                              <li><strong>Images</strong>: <code>&lt;img&gt;</code></li>
-                              <li><strong>Lists</strong>: <code>&lt;ul&gt;</code>, <code>&lt;ol&gt;</code>, <code>&lt;li&gt;</code></li>
-                              <li><strong>Divisions</strong>: <code>&lt;div&gt;</code></li>
-                            </ul>
-                            
-                            <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-6">
-                              <h4 className="text-blue-800 dark:text-blue-300 font-medium mb-2 flex items-center">
-                                <AlertCircle className="h-4 w-4 mr-2" /> Important Note
-                              </h4>
-                              <p className="text-sm text-blue-700 dark:text-blue-400">
-                                HTML is about structure, not style. For applying styles to your HTML elements, you should use CSS.
-                              </p>
-                            </div>
-                          </>
+                        {activeLesson?.content ? (
+                          <div>
+                            {activeLesson.content}
+                          </div>
                         ) : (
                           <div className="text-center py-12">
-                            <h3 className="text-lg font-medium mb-2">Chapter content not available in the demo</h3>
-                            <p className="text-muted-foreground">This is a placeholder for the chapter content.</p>
+                            <h3 className="text-lg font-medium mb-2">Lesson content not available</h3>
+                            <p className="text-muted-foreground">This is a placeholder for the lesson content.</p>
                           </div>
                         )}
                         
                         <Separator className="my-8" />
                         
                         <div className="flex justify-between">
-                          <Button variant="outline" disabled={course.chapters.findIndex(ch => ch.id === activeChapter.id) === 0}>
-                            Previous Chapter
+                          <Button 
+                            variant="outline" 
+                            disabled={course.lessons.findIndex(l => l.id === activeLesson.id) === 0}
+                            onClick={() => {
+                              const currentIndex = course.lessons.findIndex(l => l.id === activeLesson.id);
+                              if (currentIndex > 0) {
+                                handleLessonSelect(course.lessons[currentIndex - 1]);
+                              }
+                            }}
+                          >
+                            Previous Lesson
                           </Button>
-                          <Button disabled={course.chapters.findIndex(ch => ch.id === activeChapter.id) === course.chapters.length - 1}>
-                            Next Chapter
+                          <Button 
+                            disabled={
+                              course.lessons.findIndex(l => l.id === activeLesson.id) === course.lessons.length - 1 ||
+                              // Disable Next Lesson button if current lesson is not completed
+                              (activeLesson.completion_status !== "completed" && 
+                               course.lessons.findIndex(l => l.id === activeLesson.id) < course.lessons.length - 1)
+                            }
+                            onClick={() => {
+                              const currentIndex = course.lessons.findIndex(l => l.id === activeLesson.id);
+                              if (currentIndex < course.lessons.length - 1) {
+                                handleLessonSelect(course.lessons[currentIndex + 1]);
+                              }
+                            }}
+                          >
+                            Next Lesson
                           </Button>
                         </div>
                       </div>
@@ -353,23 +424,23 @@ export default function CourseDetail() {
                         {quizTab === "preview" && !quizStarted && !quizSubmitted && (
                           <div className="text-center py-8">
                             <Award className="h-12 w-12 mx-auto mb-4 text-primary" />
-                            <h2 className="text-2xl font-bold mb-2">{activeQuiz.title}</h2>
+                            <h2 className="text-2xl font-bold mb-2">{activeQuiz?.title}</h2>
                             <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                              Complete this quiz to test your knowledge and progress to the next chapter.
+                              Complete this quiz to test your knowledge and progress to the next lesson.
                             </p>
                             <div className="bg-muted/50 rounded-lg p-6 max-w-lg mx-auto">
                               <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div className="text-left">
                                   <p className="text-sm text-muted-foreground">Questions</p>
-                                  <p className="font-medium">{activeQuiz.questions.length} questions</p>
+                                  <p className="font-medium">{activeQuiz?.questions.length} questions</p>
                                 </div>
                                 <div className="text-left">
                                   <p className="text-sm text-muted-foreground">Time Limit</p>
-                                  <p className="font-medium">{activeQuiz.timeLimit} minutes</p>
+                                  <p className="font-medium">{activeQuiz?.timeLimit || 3} minutes</p>
                                 </div>
                                 <div className="text-left">
                                   <p className="text-sm text-muted-foreground">Passing Score</p>
-                                  <p className="font-medium">{activeQuiz.passingScore}%</p>
+                                  <p className="font-medium">{activeQuiz?.passing_score || 70}%</p>
                                 </div>
                                 <div className="text-left">
                                   <p className="text-sm text-muted-foreground">Attempts</p>
@@ -384,22 +455,22 @@ export default function CourseDetail() {
                         {quizStarted && !quizSubmitted && (
                           <div>
                             <div className="flex justify-between items-center mb-6">
-                              <h2 className="text-xl font-bold">{activeQuiz.title}</h2>
+                              <h2 className="text-xl font-bold">{activeQuiz?.title}</h2>
                               <div className="bg-muted px-3 py-1 rounded-full">
                                 <span className="font-medium">Time Left: {formatTime(timeLeft)}</span>
                               </div>
                             </div>
                             
                             <div className="space-y-8">
-                              {activeQuiz.questions.map((question, qIndex) => (
+                              {activeQuiz?.questions?.map((question, qIndex) => (
                                 <div key={question.id} className="border rounded-lg p-6">
                                   <h3 className="text-lg font-medium mb-4">
-                                    {qIndex + 1}. {question.question}
+                                    {qIndex + 1}. {question.text}
                                   </h3>
                                   <div className="space-y-3">
                                     {question.options.map((option, oIndex) => (
                                       <div 
-                                        key={oIndex}
+                                        key={option.id}
                                         className={cn(
                                           "border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors",
                                           quizAnswers[qIndex] === oIndex && "border-primary bg-primary/5"
@@ -413,7 +484,7 @@ export default function CourseDetail() {
                                           )}>
                                             {quizAnswers[qIndex] === oIndex && <div className="h-2 w-2 rounded-full bg-current"></div>}
                                           </div>
-                                          <span>{option}</span>
+                                          <span>{option.text}</span>
                                         </div>
                                       </div>
                                     ))}
@@ -426,8 +497,8 @@ export default function CourseDetail() {
                               <Button variant="outline" onClick={() => setQuizTab("preview")}>
                                 Back to Overview
                               </Button>
-                              <Button onClick={submitQuiz}>
-                                Submit Quiz
+                              <Button onClick={submitQuiz} disabled={isSubmitting}>
+                                {isSubmitting ? "Submitting..." : "Submit Quiz"}
                               </Button>
                             </div>
                           </div>
@@ -440,18 +511,18 @@ export default function CourseDetail() {
                             transition={{ duration: 0.5 }}
                             className="text-center py-8"
                           >
-                            {quizScore >= (activeQuiz.passingScore || 70) ? (
+                            {quizScore >= (activeQuiz?.passing_score || 70) ? (
                               <CheckCircle className="h-16 w-16 mx-auto mb-4 text-green-500" />
                             ) : (
                               <XCircle className="h-16 w-16 mx-auto mb-4 text-red-500" />
                             )}
                             
                             <h2 className="text-2xl font-bold mb-2">
-                              {quizScore >= (activeQuiz.passingScore || 70) ? "Quiz Passed!" : "Quiz Failed"}
+                              {quizScore >= (activeQuiz?.passing_score || 70) ? "Quiz Passed!" : "Quiz Failed"}
                             </h2>
                             
                             <p className="text-muted-foreground mb-6">
-                              {quizScore >= (activeQuiz.passingScore || 70) 
+                              {quizScore >= (activeQuiz?.passing_score || 70) 
                                 ? "Great job! You've successfully completed this quiz." 
                                 : "Don't worry, you can review the material and try again."}
                             </p>
@@ -460,7 +531,7 @@ export default function CourseDetail() {
                               <div className="mb-4">
                                 <p className="text-sm text-muted-foreground mb-1">Your Score</p>
                                 <div className="flex items-center justify-center gap-2">
-                                  {/* <Progress value={quizScore} className="h-3 w-40" /> */}
+                                  <Progress value={quizScore} className="h-3 w-40" />
                                   <span className="font-bold text-lg">{quizScore}%</span>
                                 </div>
                               </div>
@@ -468,11 +539,11 @@ export default function CourseDetail() {
                               <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
                                   <p className="text-muted-foreground">Passing Score</p>
-                                  <p className="font-medium">{activeQuiz.passingScore}%</p>
+                                  <p className="font-medium">{activeQuiz?.passing_score}%</p>
                                 </div>
                                 <div>
                                   <p className="text-muted-foreground">Time Taken</p>
-                                  <p className="font-medium">{activeQuiz.timeLimit - Math.floor(timeLeft / 60)} min</p>
+                                  <p className="font-medium">{activeQuiz?.timeLimit || 3 - Math.floor(timeLeft / 60)} min</p>
                                 </div>
                               </div>
                             </div>
@@ -486,9 +557,39 @@ export default function CourseDetail() {
                                 Try Again
                               </Button>
                               
-                              {quizScore >= (activeQuiz.passingScore || 70) && (
-                                <Button>
-                                  Continue to Next Chapter
+                              {quizScore >= (activeQuiz?.passing_score || 70) && (
+                                <Button onClick={() => {
+                                  // Move to next lesson if available
+                                  const currentIndex = course.lessons.findIndex(l => l.id === activeLesson?.id);
+                                  if (currentIndex < course.lessons.length - 1) {
+                                    // Set next lesson to in_progress if it's not already completed
+                                    const nextLesson = course.lessons[currentIndex + 1];
+                                    if (nextLesson.completion_status !== "completed") {
+                                      updateLessonCompletionStatus(nextLesson.id, "in_progress");
+                                    }
+                                    
+                                    // Reset quiz states before changing lessons
+                                    setQuizStarted(false);
+                                    setQuizSubmitted(false);
+                                    setQuizTab("preview");
+                                    setQuizAnswers([]);
+                                    setQuizScore(0);
+                                    if (quizTimer) clearInterval(quizTimer);
+                                    
+                                    // Select the next lesson
+                                    handleLessonSelect(course.lessons[currentIndex + 1]);
+                                    
+                                    // Set the active tab to content to ensure lesson content is shown
+                                    const tabsElement = document.querySelector('[role="tablist"]');
+                                    if (tabsElement) {
+                                      const contentTab = tabsElement.querySelector('[value="content"]');
+                                      if (contentTab) {
+                                        (contentTab as HTMLElement).click();
+                                      }
+                                    }
+                                  }
+                                }}>
+                                  Continue to Next Lesson
                                 </Button>
                               )}
                             </div>

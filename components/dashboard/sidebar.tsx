@@ -22,7 +22,7 @@ import { JSXElementConstructor, Key, PromiseLikeOfReactNode, ReactElement, React
 import { DASHBOARD_LINKS } from "@/lib/constants";
 import { User } from "@/lib/types";
 import { UrlObject } from "node:url";
-
+import authService from "@/services/authService";
 interface SidebarProps {
   className?: string;
 }
@@ -34,7 +34,7 @@ export function Sidebar({ className }: SidebarProps) {
 
   useEffect(() => {
     // Check for user in localStorage (in a real app, this would be handled by auth state management)
-    const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem("eduSphereUser");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
@@ -67,9 +67,11 @@ export function Sidebar({ className }: SidebarProps) {
   };
 
   const links = getLinks();
+  console.log(links)
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
+  const handleLogout = async () => {
+    // localStorage.removeItem("eduSphereUser");
+    await authService.logout();
     window.location.href = "/auth/sign-in";
   };
 
@@ -181,7 +183,7 @@ export function Sidebar({ className }: SidebarProps) {
               </span>
             </div>
             <div>
-              <p className="font-medium line-clamp-1">{user?.name || "User"}</p>
+              <p className="font-medium line-clamp-1">{user?.email || "User"}</p>
               <p className="text-xs text-muted-foreground capitalize">{user?.role || "Role"}</p>
             </div>
           </div>

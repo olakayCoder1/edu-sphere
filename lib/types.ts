@@ -39,9 +39,9 @@ export type Course = {
   completedChapters?: number;
   progress?: number;
   // status?: string;
-  status?: "not-started" | "in-progress" | "completed"| undefined;
+  status?: "not-started" | "in-progress" | "completed"| undefined | string;
   // category: string;
-  level: "Beginner" | "Intermediate" | "Advanced" | "All Levels";
+  level: "Beginner" | "Intermediate" | "Advanced" | "All Levels" | undefined | string;
   duration: string;
   rating?: number;
   students?: number;
