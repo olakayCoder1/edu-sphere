@@ -744,3 +744,13 @@
 //     </div>
 //   );
 // }
+
+
+"use client";
+
+import { useParams } from "next/navigation";
+
+export default function TutorCourseDetail() {
+  const { id } = useParams();
+  return <div>Course ID: {id}</div>;
+}
