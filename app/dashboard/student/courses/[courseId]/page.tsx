@@ -15,7 +15,7 @@ export default function CoursePage() {
     const fetchCourse = async () => {
       try {
         const response : any = await courseService.getCourseById(courseId as string);
-        setCourse(response);
+        setCourse({ ...response, id: Number(response.id) });
         console.log(response)
       } catch (error) {
         console.error("Error fetching course:", error);

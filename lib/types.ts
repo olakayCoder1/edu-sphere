@@ -30,7 +30,7 @@ export type Student = User & {
 };
 
 export type Course = {
-  id: string;
+  id: string | number;
   title: string;
   description: string;
   tutor: string; // tutor name or ID
@@ -49,7 +49,11 @@ export type Course = {
   lastAccessed?: string | null;
   chapters: Chapter[];
   createdAt?: string;
+  created_at?: string;
+  updated_at?: string;
   updatedAt?: string;
+  lessons?: any[],
+  user: any
 };
 
 export type Chapter = {

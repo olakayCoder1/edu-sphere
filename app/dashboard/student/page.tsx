@@ -22,6 +22,7 @@ export default function StudentDashboard() {
     const fetchCourses = async () => {
       try {
         const courses_response = await courseService.getInProgressCourses();
+        // @ts-nocheck
         setCourses(courses_response?.data || []); 
       } catch (error) {
         console.error("Error fetching courses:", error);

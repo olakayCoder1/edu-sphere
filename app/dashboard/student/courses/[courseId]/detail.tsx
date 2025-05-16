@@ -61,7 +61,7 @@ type Course = {
   progress?: number; // Added for UI compatibility
 }
 
-export default function CourseDetail({ courseData }: { courseData: Course }) {
+export default function CourseDetail({ courseData }: { courseData: any }) {
   const params = useParams();
   const router = useRouter();
   const [course, setCourse] = useState<Course | null>(null);
@@ -99,13 +99,13 @@ export default function CourseDetail({ courseData }: { courseData: Course }) {
     }
   }, [quizTimer]);
 
-  
+
   // Initialize the course data
   useEffect(() => {
     if (courseData) {
       // Calculate progress based on completed lessons
       const completedCount = courseData.lessons.filter(
-        lesson => lesson.completion_status === "completed"
+        (        lesson: { completion_status: string; }) => lesson.completion_status === "completed"
       ).length;
       const totalLessons = courseData.lessons.length;
       const calculatedProgress = totalLessons > 0 

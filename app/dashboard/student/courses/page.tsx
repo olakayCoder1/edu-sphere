@@ -58,7 +58,7 @@ export default function StudentCourses() {
   const getEnrolledCourses = useCallback(() => {
     if (!student) return courses;
     return courses.filter(course => 
-      student.enrolledCourses.includes(course.id)
+      student.enrolledCourses.includes(String(course.id))
     );
   }, [student, courses]);
 
