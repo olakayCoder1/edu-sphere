@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, JSXElementConstructor, PromiseLikeOfReactNode, ReactElement, ReactNode, ReactPortal } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Header } from "@/components/dashboard/header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -109,7 +109,7 @@ export default function TutorCourseDetail() {
   };
 
   // For lesson reordering
-  const handleDragEnd = async (result:any) => {
+  const handleDragEnd = async (result: any) => {
     if (!result.destination) return;
     
     const items = Array.from(course.lessons);
@@ -117,7 +117,7 @@ export default function TutorCourseDetail() {
     items.splice(result.destination.index, 0, reorderedItem);
     
     // Update lesson order
-    const updatedLessons = items.map((lesson:any, index) => ({
+    const updatedLessons = items.map((lesson: any, index) => ({
       ...lesson,
       order: index + 1
     }));
@@ -140,7 +140,7 @@ export default function TutorCourseDetail() {
   const [selectedFile, setSelectedFile] = useState<any>(null);
   const [regenerating, setRegenerating] = useState(false);
 
-  const handleFileChange = (e:any) => {
+  const handleFileChange = (e: any) => {
     if (e.target.files && e.target.files[0]) {
       setSelectedFile(e.target.files[0]);
     }
@@ -183,13 +183,13 @@ export default function TutorCourseDetail() {
   };
 
   // Open lesson modal
-  const openLessonModal = (lesson:any) => {
+  const openLessonModal = (lesson: any) => {
     setSelectedLesson(lesson);
     setIsLessonModalOpen(true);
   };
 
   // Open quiz modal
-  const openQuizModal = (quiz:any, lesson:any) => {
+  const openQuizModal = (quiz: any, lesson: any) => {
     setSelectedQuiz({...quiz, lessonTitle: lesson.title});
     setIsQuizModalOpen(true);
   };
@@ -321,7 +321,7 @@ export default function TutorCourseDetail() {
                   <div className="flex items-center">
                     <span className="mr-2">{course.lessons?.length || 0} lessons</span>
                     <span className="mx-2">•</span>
-                    <span>{course.lessons?.reduce((acc:any, lesson:any) => acc + (lesson.quizzes?.length || 0), 0)} quizzes</span>
+                    <span>{course.lessons?.reduce((acc: any, lesson: any) => acc + (lesson.quizzes?.length || 0), 0)} quizzes</span>
                   </div>
                 </div>
               </div>
@@ -371,10 +371,10 @@ export default function TutorCourseDetail() {
                 <>
                   <Dialog>
                     <DialogTrigger asChild>
-                      {/* <Button variant="outline" className="w-full">
-                        <FileEdit className="mr-2 h-4 w-4" />
+                      <Button variant="outline" className="w-full">
+                        <Upload className="mr-2 h-4 w-4" />
                         Update Content
-                      </Button> */}
+                      </Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
@@ -478,63 +478,7 @@ export default function TutorCourseDetail() {
                   </CardHeader>
                   <CardContent>
                     {course.lessons && course.lessons.length > 0 ? (
-                      
                       <DragDropContext onDragEnd={handleDragEnd}>
-                        <Droppable droppableId="lessons"></Droppable>
-                          {(provided) => (
-                            <div 
-                              {...provided.droppableProps}
-                              ref={provided.innerRef}
-                              className="space-y-2"
-                            >
-                              {course.lessons
-                                .sort((a, b) => a.order - b.order)
-                                .map((lesson, index) => (
-                                <Draggable 
-                                  key={`lesson-${lesson.id}`} 
-                                  draggableId={`lesson-${lesson.id}`} 
-                                  index={index}
-                                >
-                                  {(provided) => (
-                                    <div
-                                      ref={provided.innerRef}
-                                      {...provided.draggableProps}
-                                      className="flex items-center p-3 border rounded-md bg-background hover:bg-muted/50 transition-colors"
-                                    >
-                                      <div 
-                                        {...provided.dragHandleProps}
-                                        className="p-2 mr-2 rounded-md hover:bg-muted cursor-grab"
-                                      >
-                                        <GripVertical className="h-4 w-4 text-muted-foreground" />
-                                      </div>
-                                      <div className="flex-1">
-                                        <div className="flex items-center gap-2">
-                                          <Badge variant="outline" className="bg-blue-50 text-blue-700">
-                                            Lesson {index + 1}
-                                          </Badge>
-                                          <h3 className="font-medium">{lesson.title}</h3>
-                                        </div>
-                                        <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
-                                          {lesson.content?.substring(0, 100)}...
-                                        </p>
-                                      </div>
-                                      <div className="flex items-center gap-2">
-                                        <Button 
-                                          variant="ghost" 
-                                          size="sm"
-                                          onClick={() => openLessonModal(lesson)}
-                                        >
-                                          <Edit className="h-4 w-4" />
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </Draggable>
-                              ))}
-                              {provided.placeholder}
-                            </div>
-                          )}
-                        </Droppable>
                         <Droppable droppableId="lessons">
                           {(provided) => (
                             <div 
@@ -543,8 +487,8 @@ export default function TutorCourseDetail() {
                               className="space-y-2"
                             >
                               {course.lessons
-                                .sort((a, b) => a.order - b.order)
-                                .map((lesson, index) => (
+                                .sort((a: { order: number }, b: { order: number }) => a.order - b.order)
+                                .map((lesson: any, index: number) => (
                                 <Draggable 
                                   key={`lesson-${lesson.id}`} 
                                   draggableId={`lesson-${lesson.id}`} 
@@ -613,11 +557,11 @@ export default function TutorCourseDetail() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {course.lessons && course.lessons.some((lesson:any) => lesson.quizzes?.length > 0) ? (
+                    {course.lessons && course.lessons.some((lesson: any) => lesson.quizzes?.length > 0) ? (
                       <div className="space-y-6">
                         {course.lessons
-                          .sort((a: { order: number; }, b: { order: number; }) => a.order - b.order)
-                          .map((lesson: { quizzes: { id: any; title: any; questions: string | any[]; }[]; id: any; title: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; }, lessonIndex: number) => (
+                          .sort((a: { order: number }, b: { order: number }) => a.order - b.order)
+                          .map((lesson: any, lessonIndex: number) => (
                           lesson.quizzes && lesson.quizzes.length > 0 ? (
                             <div key={`lesson-quizzes-${lesson.id}`} className="space-y-3">
                               <h3 className="font-medium flex items-center">
@@ -627,7 +571,7 @@ export default function TutorCourseDetail() {
                                 {lesson.title}
                               </h3>
                               <div className="space-y-2 ml-8">
-                                {lesson.quizzes.map((quiz: { id: any; title: any; questions: string | any[]; }, quizIndex: number) => (
+                                {lesson.quizzes.map((quiz: any, quizIndex: number) => (
                                   <div 
                                     key={`quiz-${quiz.id}`}
                                     className="flex items-center justify-between p-3 border rounded-md bg-background hover:bg-muted/50 transition-colors"
@@ -700,7 +644,7 @@ export default function TutorCourseDetail() {
               <div className="mt-6">
                 <h3 className="text-lg font-medium mb-4">Associated Quizzes</h3>
                 <div className="space-y-2">
-                  {selectedLesson?.quizzes.map((quiz:any) => (
+                  {selectedLesson?.quizzes.map((quiz: any) => (
                     <div 
                       key={`modal-quiz-${quiz.id}`}
                       className="p-3 border rounded-md hover:bg-muted/50 transition-colors cursor-pointer"
@@ -763,14 +707,14 @@ export default function TutorCourseDetail() {
             
             {selectedQuiz?.questions && selectedQuiz?.questions.length > 0 ? (
               <div className="space-y-8">
-                {selectedQuiz.questions.map((question: { id: any; text: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; options: any[]; }, questionIndex: number) => (
+                {selectedQuiz.questions.map((question: any, questionIndex: number) => (
                   <div key={`quiz-question-${question.id}`} className="border rounded-md p-4">
                     <h4 className="font-medium mb-3">
                       Question {questionIndex + 1}: {question.text}
                     </h4>
                     
                     <div className="space-y-2 ml-2">
-                      {question.options.map((option:any) => (
+                      {question.options.map((option: any) => (
                         <div key={`option-${option.id}`} className="flex items-center gap-2">
                           <Badge 
                             variant="outline" 
