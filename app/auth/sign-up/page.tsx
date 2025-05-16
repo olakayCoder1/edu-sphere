@@ -175,25 +175,6 @@ export default function SignUp() {
         </p>
       </div>
 
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or use demo accounts</span>
-          </div>
-        </div>
-        
-        <div className="mt-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            You can use demo credentials on the{" "}
-            <Link href="/auth/sign-in" className="text-primary hover:underline">
-              sign in page
-            </Link>
-          </p>
-        </div>
-      </div>
     </div>
   );
 }

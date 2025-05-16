@@ -186,34 +186,6 @@ export default function SignIn() {
         </form>
       </Form>
 
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Demo Credentials</span>
-          </div>
-        </div>
-        
-        <div className="mt-6 grid grid-cols-1 gap-4 text-sm">
-          <div className="border rounded-md p-3 cursor-pointer hover:border-primary" onClick={() => loginWithDemo("admin")}>
-            <div className="font-medium mb-1">Admin</div>
-            <div className="text-muted-foreground mb-1">Email: admin@edusphere.com</div>
-            <div className="text-muted-foreground">Password: admin123</div>
-          </div>
-          <div className="border rounded-md p-3 cursor-pointer hover:border-primary" onClick={() => loginWithDemo("tutor")}>
-            <div className="font-medium mb-1">Tutor</div>
-            <div className="text-muted-foreground mb-1">Email: tutor@edusphere.com</div>
-            <div className="text-muted-foreground">Password: tutor123</div>
-          </div>
-          <div className="border rounded-md p-3 cursor-pointer hover:border-primary" onClick={() => loginWithDemo("student")}>
-            <div className="font-medium mb-1">Student</div>
-            <div className="text-muted-foreground mb-1">Email: student@edusphere.com</div>
-            <div className="text-muted-foreground">Password: student123</div>
-          </div>
-        </div>
-      </div>
 
       <div className="mt-6 text-center">
         <p className="text-sm text-muted-foreground">
