@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import Image from "next/image";
 import {
   Select,
   SelectContent,
@@ -130,167 +131,6 @@ export default function AdminCoursesManagement() {
         
         // Mock data
         const mockCourses = [
-          {
-            id: "course-1",
-            title: "Introduction to Web Development",
-            description: "Learn the basics of HTML, CSS, and JavaScript to build modern websites.",
-            category: "Web Development",
-            level: "Beginner",
-            isPaid: false,
-            price: "0",
-            chapters: 12,
-            totalDuration: 240,
-            status: "published" as "published",
-            featuredStatus: "featured",
-            enrollments: 128,
-            createdAt: "2025-04-15T10:30:00Z",
-            tutor: {
-              id: "tutor-1",
-              name: "Sarah Johnson",
-              image: "/images/avatars/avatar-1.jpg"
-            },
-            thumbnail: "/images/courses/web-dev.jpg",
-            rating: 4.7,
-            reviewCount: 42
-          },
-          {
-            id: "course-2",
-            title: "Advanced React Patterns",
-            description: "Master advanced React concepts including hooks, context API, and performance optimization.",
-            category: "Programming",
-            level: "Advanced",
-            isPaid: true,
-            price: "49.99",
-            chapters: 15,
-            totalDuration: 320,
-            status: "published",
-            featuredStatus: "regular",
-            enrollments: 87,
-            createdAt: "2025-03-22T14:15:00Z",
-            tutor: {
-              id: "tutor-2",
-              name: "Michael Chen",
-              image: "/images/avatars/avatar-2.jpg"
-            },
-            thumbnail: "/images/courses/react.jpg",
-            rating: 4.9,
-            reviewCount: 38
-          },
-          {
-            id: "course-3",
-            title: "Data Science with Python",
-            description: "Learn data analysis, visualization, and machine learning with Python.",
-            category: "Data Science",
-            level: "Intermediate",
-            isPaid: true,
-            price: "59.99",
-            chapters: 20,
-            totalDuration: 480,
-            status: "published",
-            featuredStatus: "featured",
-            enrollments: 152,
-            createdAt: "2025-04-01T09:45:00Z",
-            tutor: {
-              id: "tutor-3",
-              name: "Emily Wilson",
-              image: "/images/avatars/avatar-3.jpg"
-            },
-            thumbnail: "/images/courses/data-science.jpg",
-            rating: 4.8,
-            reviewCount: 64
-          },
-          {
-            id: "course-4",
-            title: "UI/UX Design Principles",
-            description: "Learn the fundamentals of user interface and user experience design.",
-            category: "UI/UX Design",
-            level: "Beginner",
-            isPaid: true,
-            price: "39.99",
-            chapters: 10,
-            totalDuration: 210,
-            status: "pending" as "pending",
-            featuredStatus: "regular",
-            enrollments: 0,
-            createdAt: "2025-04-28T11:20:00Z",
-            tutor: {
-              id: "tutor-4",
-              name: "David Lee",
-              image: "/images/avatars/avatar-4.jpg"
-            },
-            thumbnail: "/images/courses/ui-ux.jpg",
-            rating: 0,
-            reviewCount: 0
-          },
-          {
-            id: "course-5",
-            title: "Mobile App Development with Flutter",
-            description: "Build cross-platform mobile applications using Flutter and Dart.",
-            category: "Mobile Development",
-            level: "Intermediate",
-            isPaid: true,
-            price: "49.99",
-            chapters: 18,
-            totalDuration: 360,
-            status: "under-review" as "under-review",
-            featuredStatus: "regular",
-            enrollments: 0,
-            createdAt: "2025-04-25T15:10:00Z",
-            tutor: {
-              id: "tutor-5",
-              name: "Jessica Brown",
-              image: "/images/avatars/avatar-5.jpg"
-            },
-            thumbnail: "/images/courses/flutter.jpg",
-            rating: 0,
-            reviewCount: 0
-          },
-          {
-            id: "course-6",
-            title: "DevOps for Beginners",
-            description: "Introduction to DevOps principles, CI/CD, and infrastructure as code.",
-            category: "DevOps",
-            level: "Beginner",
-            isPaid: false,
-            price: "0",
-            chapters: 8,
-            totalDuration: 180,
-            status: "published",
-            featuredStatus: "regular",
-            enrollments: 93,
-            createdAt: "2025-03-10T10:00:00Z",
-            tutor: {
-              id: "tutor-6",
-              name: "Robert Taylor",
-              image: "/images/avatars/avatar-6.jpg"
-            },
-            thumbnail: "/images/courses/devops.jpg",
-            rating: 4.5,
-            reviewCount: 29
-          },
-          {
-            id: "course-7",
-            title: "Machine Learning Fundamentals",
-            description: "Learn the basics of machine learning algorithms and implementations.",
-            category: "Machine Learning",
-            level: "Intermediate",
-            isPaid: true,
-            price: "69.99",
-            chapters: 22,
-            totalDuration: 520,
-            status: "published",
-            featuredStatus: "featured",
-            enrollments: 175,
-            createdAt: "2025-02-15T09:30:00Z",
-            tutor: {
-              id: "tutor-7",
-              name: "Olivia Martinez",
-              image: "/images/avatars/avatar-7.jpg"
-            },
-            thumbnail: "/images/courses/ml.jpg",
-            rating: 4.9,
-            reviewCount: 58
-          },
           {
             id: "course-8",
             title: "Digital Marketing Strategy",
@@ -581,7 +421,7 @@ export default function AdminCoursesManagement() {
                             <div className="flex items-center gap-3">
                               <div className="w-10 h-10 rounded bg-muted flex items-center justify-center overflow-hidden">
                                 {course.thumbnail ? (
-                                  <img
+                                  <Image
                                     src={course.thumbnail}
                                     alt={course.title}
                                     className="w-full h-full object-cover"
@@ -610,7 +450,7 @@ export default function AdminCoursesManagement() {
                             <div className="flex items-center gap-2">
                               <div className="w-6 h-6 rounded-full bg-muted overflow-hidden">
                                 {course.tutor.image ? (
-                                  <img
+                                  <Image 
                                     src={course.tutor.image}
                                     alt={course.tutor.name}
                                     className="w-full h-full object-cover"
@@ -773,7 +613,7 @@ export default function AdminCoursesManagement() {
               <div>
                 <div className="bg-muted rounded-md overflow-hidden mb-4">
                   {viewCourse.thumbnail ? (
-                    <img
+                    <Image
                       src={viewCourse.thumbnail}
                       alt={viewCourse.title}
                       className="w-full aspect-video object-cover"
@@ -887,7 +727,7 @@ export default function AdminCoursesManagement() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-muted overflow-hidden">
                           {viewCourse.tutor.image ? (
-                            <img
+                            <Image
                               src={viewCourse.tutor.image}
                               alt={viewCourse.tutor.name}
                               className="w-full h-full object-cover"
