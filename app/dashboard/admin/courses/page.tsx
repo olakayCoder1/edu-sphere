@@ -442,8 +442,8 @@ export default function AdminCourseManagement() {
                                       <AlertDialogHeader>
                                         <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                          This action cannot be undone. This will permanently delete the course
-                                          "{course.title}" and all its associated lessons, quizzes, and student progress.
+                                          This will permanently delete the course &quot;{course.title}&quot; and all its associated lessons, quizzes, and student progress.
+
                                         </AlertDialogDescription>
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
