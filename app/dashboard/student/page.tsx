@@ -72,7 +72,7 @@ export default function StudentDashboard() {
           />
         </div>
 
-        {/* <div className="mt-8">
+        <div className="mt-8">
           <h2 className="text-2xl font-semibold mb-6">Continue Learning</h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {courses
@@ -81,7 +81,7 @@ export default function StudentDashboard() {
                 <CourseCard key={course.id} course={course} userRole="student" />
               ))}
           </div>
-        </div> */}
+        </div>
 
         <div className="mt-8">
           <Card>
