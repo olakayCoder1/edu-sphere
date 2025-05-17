@@ -216,7 +216,7 @@ export const authService = {
           
           // Redirect to login if unauthorized
           if (typeof window !== 'undefined') {
-            window.location.href = '/login';
+            window.location.href = 'auth/sign-in';
           }
         }
       }

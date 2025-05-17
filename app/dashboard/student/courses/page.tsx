@@ -51,7 +51,7 @@ export default function TutorCourses() {
     };
 
     // Check for user info in localStorage
-    const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem("eduSphereUser");
     if (storedUser) {
       const user = JSON.parse(storedUser);
       if (user.role === "tutor") {
