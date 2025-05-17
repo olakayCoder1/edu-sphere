@@ -174,7 +174,7 @@ export default function TutorCourses() {
                       <p className="text-muted-foreground">
                         {searchTerm || categoryFilter !== "all"
                           ? "Try adjusting your filters"
-                          : "You don't have any courses in this category yet"}
+                          : "You don&apos;t have any courses in this category yet"}
                       </p>
                     </div>
                   )}

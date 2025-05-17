@@ -98,7 +98,7 @@ export default function StudentDashboard() {
                   <BookOpen className="h-8 w-8 text-blue-600" />
                 </div>
                 <h3 className="mb-3 text-xl font-semibold">No Courses In Progress</h3>
-                <p className="mb-6 text-gray-600">You don't have any courses in progress. Start your learning journey by enrolling in a course.</p>
+                <p className="mb-6 text-gray-600">{"You don't have any courses in progress. Start your learning journey by enrolling in a course."}</p>
                 <Link href="/dashboard/student/courses">
                   <Button className="flex mx-auto items-center gap-2">
                     Explore Available Courses 
