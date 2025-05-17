@@ -144,11 +144,7 @@ export default function TutorCourses() {
                 </Select>
               </div>
             </div>
-            <Link href="/dashboard/tutor/courses/new">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> Create Course
-              </Button>
-            </Link>
+          
           </div>
 
           <Tabs defaultValue="all" className="w-full">
@@ -169,7 +165,7 @@ export default function TutorCourses() {
                   {courses.length > 0 ? (
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                       {courses.map((course:any) => (
-                        <CourseCard key={course.id} course={course} userRole="tutor" />
+                        <CourseCard key={course.id} course={course} userRole="student" />
                       ))}
                     </div>
                   ) : (

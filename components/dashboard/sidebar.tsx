@@ -36,9 +36,12 @@ export function Sidebar({ className }: SidebarProps) {
     // Check for user in localStorage (in a real app, this would be handled by auth state management)
     const storedUser = localStorage.getItem("eduSphereUser");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const storedData = JSON.parse(storedUser)
+      setUser(storedData?.user);
     }
   }, []);
+
+
 
   // Get the appropriate links based on user role
   const getLinks = () => {
@@ -60,7 +63,7 @@ export function Sidebar({ className }: SidebarProps) {
       return icons[iconName] || <LayoutDashboard className="h-5 w-5" />;
     };
 
-    return (DASHBOARD_LINKS as any)[user.role].map((link: any) => ({
+    return (DASHBOARD_LINKS as any)[user?.role]?.map((link: any) => ({
       ...link,
       icon: getIcon(link.icon),
     }));
@@ -106,7 +109,7 @@ export function Sidebar({ className }: SidebarProps) {
               </div>
               <div className="flex-1 overflow-auto py-4 px-3">
                 <nav className="flex flex-col space-y-1">
-                    {links.map((link: { href: string | UrlObject; icon: ReactNode; label: ReactNode }, index: number) => (
+                    {links?.map((link: { href: string | UrlObject; icon: ReactNode; label: ReactNode }, index: number) => (
                     <Link
                       key={index}
                       href={link.href}
@@ -158,7 +161,7 @@ export function Sidebar({ className }: SidebarProps) {
         </div>
         <div className="flex-1 overflow-auto py-2 px-4">
           <nav className="flex flex-col space-y-1">
-            {links.map((link: { href: string | UrlObject; icon: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; label: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; }, index: Key | null | undefined) => (
+            {links?.map((link: { href: string | UrlObject; icon: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; label: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; }, index: Key | null | undefined) => (
               <Link key={index} href={link.href}>
                 <span
                   className={cn(
@@ -179,7 +182,7 @@ export function Sidebar({ className }: SidebarProps) {
           <div className="flex items-center gap-4 mb-6">
             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
               <span className="text-primary font-medium">
-                {user?.name?.charAt(0) || "U"}
+                {user?.first_name?.charAt(0) || "U"}
               </span>
             </div>
             <div>
