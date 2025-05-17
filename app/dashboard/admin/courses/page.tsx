@@ -871,3 +871,14 @@
 //     </div>
 //   );
 // }
+
+// page.tsx
+'use client'; // This tells Next.js to treat this component as a client component.
+
+import React from "react";
+
+const Page = () => {
+  return <div>Page content here</div>;
+};
+
+export default Page;

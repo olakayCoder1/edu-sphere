@@ -298,7 +298,7 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
                     <span className="text-sm font-medium">Your Progress</span>
                     <span className="text-sm font-medium">{course.progress || 0}%</span>
                   </div>
-                  <Progress value={course.progress || 0} className="h-2" />
+                  {/* <Progress value={course.progress || 0} className="h-2" /> */}
                 </div>
                 <ul className="divide-y">
                   {course.lessons.map((lesson, index) => (
@@ -534,7 +534,7 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
                               <div className="mb-4">
                                 <p className="text-sm text-muted-foreground mb-1">Your Score</p>
                                 <div className="flex items-center justify-center gap-2">
-                                  <Progress value={quizScore} className="h-3 w-40" />
+                                  {/* <Progress value={quizScore} className="h-3 w-40" /> */}
                                   <span className="font-bold text-lg">{quizScore}%</span>
                                 </div>
                               </div>

@@ -9,7 +9,6 @@ export default function StudentEngagementChart() {
   const [overallStats, setOverallStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
-  const [viewMode, setViewMode] = useState("area");
   
   useEffect(() => {
     fetchOverallStats();

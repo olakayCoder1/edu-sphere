@@ -10,40 +10,7 @@ import { Course, LiveClass,Admin } from "@/lib/types";
 // import { DEMO_USERS } from "@/lib/constants";
 
 // Adjusted DEMO_COURSES to match the expected Course type
-const DEMO_COURSES: Course[] = [
-  {
-    id: "course-1",
-    title: "Introduction to Programming",
-    description: "Learn the basics of programming.",
-    tutor: "John Doe",
-    thumbnail: "/images/programming-course.jpg",
-    totalChapters: 10,
-    completedChapters: 5,
-    progress: 50,
-    status: "in-progress",
-    category: "Programming",
-    level: "Beginner",
-    students: 120,
-    duration: "120",
-    chapters: [],
-  },
-  {
-    id: "course-2",
-    title: "Advanced React",
-    description: "Master React with advanced concepts.",
-    tutor: "Jane Smith",
-    thumbnail: "/images/react-course.jpg",
-    totalChapters: 15,
-    completedChapters: 15,
-    progress: 100,
-    status: "completed",
-    category: "Web Development",
-    level: "Advanced",
-    students: 80,
-    duration: "180",
-    chapters: [],
-  },
-];
+const DEMO_COURSES: Course[] = [];
 
 // Adjusted DEMO_LIVE_CLASSES to match the expected LiveClass type
 const DEMO_LIVE_CLASSES: LiveClass[] = [
@@ -57,19 +24,7 @@ const DEMO_LIVE_CLASSES: LiveClass[] = [
     status: "upcoming",
     attendees: 50,
     thumbnail: "/images/react-class.jpg",
-  },
-  {
-    id: "class-2",
-    title: "Advanced TypeScript",
-    course: "Programming",
-    tutor: "Jane Smith",
-    date: "2023-11-20T14:00:00Z",
-    duration: 90,
-    status: "completed",
-    attendees: 30,
-    thumbnail: "/images/typescript-class.jpg",
-    recording: "/recordings/typescript-class.mp4",
-  },
+  }
 ];
 import { 
   BookOpen, 
@@ -396,7 +351,8 @@ export default function AdminDashboard() {
               .sort((a, b) => (b.students || 0) - (a.students || 0))
               .slice(0, 3)
               .map((course) => (
-                <CourseCard key={course.id} course={course} userRole="admin" />
+                // <CourseCard key={course.id} course={course} userRole="admin" />
+                <></>
               ))}
           </div>
         </div>

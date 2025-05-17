@@ -36,8 +36,14 @@ export function useAuth() {
     setLoading(true);
     try {
       const userData = await authService.login(email, password);
-      setUser(userData);
-      return userData;
+      setUser({
+        ...userData,
+        token: userData.token || '', // Ensure token is provided
+      });
+      return {
+        ...userData,
+        token: userData.token || '', // Ensure token is provided
+      };
     } finally {
       setLoading(false);
     }

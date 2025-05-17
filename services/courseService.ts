@@ -23,9 +23,11 @@ export const courseService = {
   /**
    * Get all courses
    */
-  getCourses: async (params: CourseParams = {}): Promise<Course[]> => {
+  getCourses: async (params: CourseParams = {}): Promise<any> => {
     try {
-      const response = await api.get<Course[]>('/courses/', { params });
+      const response = await api.get<{
+        data: Course[]
+      }>('/courses/', { params });
       return response.data;
     } catch (error) {
       toast.error('Failed to fetch courses');
@@ -60,9 +62,13 @@ export const courseService = {
   /**
    * Get all courses
    */
-  getInProgressCourses: async (params: CourseParams = {}): Promise<Course[]> => {
+  getInProgressCourses: async (params: CourseParams = {}): Promise<{
+    data: Course[]
+  }> => {
     try {
-      const response = await api.get<Course[]>('/courses/in-progress/', { params });
+      const response = await api.get<{
+        data: Course[]
+      }>('/courses/in-progress/', { params });
       return response.data;
     } catch (error) {
       toast.error('Failed to fetch courses');

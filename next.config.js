@@ -5,10 +5,10 @@ const nextConfig = {
   // Enable React strict mode for development
   reactStrictMode: true,
   
-  // We're using Next.js App Router
-  experimental: {
-    appDir: true,
-  },
+  // // We're using Next.js App Router
+  // experimental: {
+  //   appDir: true,
+  // },
   
   // Environment variables accessible on the client
   // These will be replaced at build time
