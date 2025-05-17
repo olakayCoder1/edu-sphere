@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { BookOpen, EyeIcon, EyeOffIcon } from "lucide-react";
@@ -18,9 +18,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Separator } from "@/components/ui/separator";
-import { DEMO_USERS } from "@/lib/constants";
 import { toast } from "sonner";
+import authService from "@/services/authService";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -33,7 +32,35 @@ export default function SignIn() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const redirectTo = searchParams.get("redirectTo") || "";
+
+  const handleRedirectByRole = useCallback((role: string | null) => {
+    console.log("Redirecting based on role:", role);
+
+    if (redirectTo) {
+      console.log("Redirecting to specified path:", redirectTo);
+      router.push(redirectTo);
+      return;
+    }
+
+    let redirectPath = "/dashboard";
+    if (role === "admin") redirectPath = "/dashboard/admin";
+    else if (role === "tutor") redirectPath = "/dashboard/tutor";
+    else if (role === "student") redirectPath = "/dashboard/student";
+
+    console.log("Redirecting to path:", redirectPath);
+    router.push(redirectPath);
+  }, [redirectTo, router]);
+
+  // Check if already logged in on mount
+  useEffect(() => {
+    if (authService.isAuthenticated()) {
+      const role = authService.getUserRole();
+      console.log("Already authenticated as:", role);
+      handleRedirectByRole(role);
+    }
+  }, [handleRedirectByRole]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -43,27 +70,29 @@ export default function SignIn() {
     },
   });
 
-  const onSubmit = (values: FormValues) => {
-    // Simulate authentication with demo users
+  const onSubmit = async (values: FormValues) => {
     const { email, password } = values;
-    
-    if (email === DEMO_USERS.admin.email && password === DEMO_USERS.admin.password) {
-      // Admin login
-      localStorage.setItem("user", JSON.stringify(DEMO_USERS.admin));
-      toast.success("Signed in as Admin");
-      router.push("/dashboard/admin");
-    } else if (email === DEMO_USERS.tutor.email && password === DEMO_USERS.tutor.password) {
-      // Tutor login
-      localStorage.setItem("user", JSON.stringify(DEMO_USERS.tutor));
-      toast.success("Signed in as Tutor");
-      router.push("/dashboard/tutor");
-    } else if (email === DEMO_USERS.student.email && password === DEMO_USERS.student.password) {
-      // Student login
-      localStorage.setItem("user", JSON.stringify(DEMO_USERS.student));
-      toast.success("Signed in as Student");
-      router.push("/dashboard/student");
-    } else {
-      toast.error("Invalid email or password");
+    setIsLoading(true);
+
+    try {
+      const userData = await authService.login(email, password);
+      console.log("Login successful - User data:", userData);
+
+      const role = userData.role || userData.app_level_role;
+      toast.success(`Signed in as ${role || "user"}`);
+
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("loginSuccess", "true");
+      }
+
+      setTimeout(() => {
+        handleRedirectByRole(role);
+      }, 500);
+    } catch (error) {
+      toast.error("Failed to sign in. Please check your credentials.");
+      console.error("Login error:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -117,7 +146,11 @@ export default function SignIn() {
                       className="absolute right-0 top-0 h-full px-3"
                       onClick={() => setShowPassword(!showPassword)}
                     >
-                      {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                      {showPassword ? (
+                        <EyeOffIcon className="h-4 w-4" />
+                      ) : (
+                        <EyeIcon className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
                 </FormControl>
@@ -126,44 +159,15 @@ export default function SignIn() {
             )}
           />
 
-          <Button type="submit" className="w-full">
-            Sign In
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
       </Form>
 
-      <div className="mt-6">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <Separator className="w-full" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Demo Credentials</span>
-          </div>
-        </div>
-        
-        <div className="mt-6 grid grid-cols-1 gap-4 text-sm">
-          <div className="border rounded-md p-3">
-            <div className="font-medium mb-1">Admin</div>
-            <div className="text-muted-foreground mb-1">Email: admin@edusphere.com</div>
-            <div className="text-muted-foreground">Password: admin123</div>
-          </div>
-          <div className="border rounded-md p-3">
-            <div className="font-medium mb-1">Tutor</div>
-            <div className="text-muted-foreground mb-1">Email: tutor@edusphere.com</div>
-            <div className="text-muted-foreground">Password: tutor123</div>
-          </div>
-          <div className="border rounded-md p-3">
-            <div className="font-medium mb-1">Student</div>
-            <div className="text-muted-foreground mb-1">Email: student@edusphere.com</div>
-            <div className="text-muted-foreground">Password: student123</div>
-          </div>
-        </div>
-      </div>
-
       <div className="mt-6 text-center">
         <p className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          {`Don't have an account? `}
           <Link href="/auth/sign-up" className="text-primary hover:underline">
             Sign Up
           </Link>

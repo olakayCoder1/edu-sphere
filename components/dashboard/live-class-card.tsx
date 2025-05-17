@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LiveClass } from "@/lib/types";
 import { Play, CalendarCheck, Video } from "lucide-react";
-
+import Image from "next/image";
 interface LiveClassCardProps {
   liveClass: LiveClass;
 }
@@ -41,7 +41,7 @@ export function LiveClassCard({ liveClass }: LiveClassCardProps) {
     >
       <Card className="overflow-hidden h-full flex flex-col">
         <div className="relative">
-          <img 
+          <Image 
             src={liveClass.thumbnail} 
             alt={liveClass.title}
             className="w-full aspect-video object-cover"

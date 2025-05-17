@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-
+import Image from "next/image";
 export function HeroSection() {
   return (
     <section className="py-20 md:py-28">

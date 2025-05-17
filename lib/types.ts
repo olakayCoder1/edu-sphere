@@ -30,7 +30,7 @@ export type Student = User & {
 };
 
 export type Course = {
-  id: string;
+  id: string | number;
   title: string;
   description: string;
   tutor: string; // tutor name or ID
@@ -39,9 +39,9 @@ export type Course = {
   completedChapters?: number;
   progress?: number;
   // status?: string;
-  status?: "not-started" | "in-progress" | "completed"| undefined;
+  status?: "not-started" | "in-progress" | "completed"| undefined | string;
   // category: string;
-  level: "Beginner" | "Intermediate" | "Advanced" | "All Levels";
+  level: "Beginner" | "Intermediate" | "Advanced" | "All Levels" | undefined | string;
   duration: string;
   rating?: number;
   students?: number;
@@ -49,7 +49,11 @@ export type Course = {
   lastAccessed?: string | null;
   chapters: Chapter[];
   createdAt?: string;
+  created_at?: string;
+  updated_at?: string;
   updatedAt?: string;
+  lessons?: any[],
+  user: any
 };
 
 export type Chapter = {
