@@ -32,7 +32,7 @@ export function Header({ title }: HeaderProps) {
     setMounted(true);
     
     // Check for user in localStorage
-    const storedUser = localStorage.getItem("user");
+    const storedUser = localStorage.getItem("eduSphereUser");
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }

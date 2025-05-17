@@ -37,6 +37,44 @@ export const courseService = {
 
 
 
+  getAllCourses: async (params: CourseParams = {}): Promise<any> => {
+    try {
+      const response = await api.get<{
+        data: Course[]
+      }>('/courses/', { params });
+      return response.data;
+    } catch (error) {
+      toast.error('Failed to fetch courses');
+      throw error;
+    }
+  },
+
+
+
+  getTutors: async (params: CourseParams = {}): Promise<any> => {
+    try {
+      const response = await api.get<{
+        data: Course[]
+      }>('/courses/', { params });
+      return response.data;
+    } catch (error) {
+      toast.error('Failed to fetch courses');
+      throw error;
+    }
+  },
+
+  exportCourseData: async (courseId: string | number) => {
+    // Example implementation: adjust URL and logic as needed
+    const response = await fetch(`/api/courses/${courseId}/export`, {
+      method: "GET",
+    });
+    if (!response.ok) throw new Error("Failed to export course data");
+    // Optionally handle file download here
+    return response;
+  },
+
+
+
   getCoursesSummary: async (params: CourseParams = {}): Promise<Course[]> => {
     try {
       const response = await api.get<Course[]>('/analytics/lesson-completion/course_summary/', { params });

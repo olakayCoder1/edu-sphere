@@ -138,6 +138,17 @@ export const UserService = {
     }
   },
 
+
+  getAllUsersAll: async (params: any = {}): Promise<Student[]> => {
+    try {
+      const response = await api.get<Student[]>('/users/', { params });
+      return response.data;
+    } catch (error) {
+      toast.error('Failed to fetch courses');
+      throw error;
+    }
+  },
+
   /**
    * Get user details by ID
    */
@@ -317,7 +328,48 @@ export const UserService = {
       lastActive: user.updated_at,
       // Additional fields as needed
     };
-  }
+  },
+
+    // Get dashboard statistics (total students, tutors, courses)
+  getStats: async () => {
+    try {
+      const response = await api.get('/admin/dashboard/stats/');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+      throw error;
+    }
+  },
+
+  // Get user registration data for charts
+  getUserRegistrations: async () => {
+    try {
+      const response = await api.get('/admin/dashboard/registrations/');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user registrations:', error);
+      throw error;
+    }
+  },
+
+  // Get active users data for charts
+  getActiveUsers: async () => {
+    try {
+      const response = await api.get('/admin/dashboard/active-users/');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching active users:', error);
+      throw error;
+    }
+  },
+
+
+
 };
 
+
+
+
 export default UserService;
+
+
