@@ -7,6 +7,7 @@ import { BookOpen, EyeIcon, EyeOffIcon } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import authService from "@/services/authService";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +30,8 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 
 const formSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  first_name: z.string().min(2, { message: "First must be at least 2 characters" }),
+  last_name: z.string().min(2, { message: "Last must be at least 2 characters" }),
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   role: z.enum(["student", "tutor"], { 
@@ -43,24 +45,48 @@ export default function SignUp() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const roleParam = searchParams.get("role");
   
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      first_name: "",
+      last_name: "",
       email: "",
       password: "",
       role: (roleParam === "student" || roleParam === "tutor") ? roleParam : undefined,
     },
   });
 
-  const onSubmit = (values: FormValues) => {
-    // In a real application, this would send data to the backend
-    // For demo, just redirect to sign in with toast
-    toast.success(`Account created successfully! Please sign in.`);
-    router.push("/auth/sign-in");
-  };
+
+  const onSubmit = async (values: FormValues) => {
+      setIsLoading(true);
+  
+      try {
+        const userData = await authService.register(values);
+        console.log("Login successful - User data:", userData);
+  
+        const role = userData.role || userData.app_level_role;
+        toast.success(`Signed in as ${role || "user"}`);
+  
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem("loginSuccess", "true");
+        }
+  
+        setTimeout(() => {
+          toast.success(`Account created successfully! Please sign in.`);
+          router.push("/auth/sign-in");;
+        }, 500);
+      } catch (error) {
+        toast.error("Failed to sign in. Please check your credentials.");
+        console.error("Login error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+
 
   return (
     <div>
@@ -80,10 +106,23 @@ export default function SignUp() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <FormField
             control={form.control}
-            name="name"
+            name="first_name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Full Name</FormLabel>
+                <FormLabel>First Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="John Doe" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="last_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Last Name</FormLabel>
                 <FormControl>
                   <Input placeholder="John Doe" {...field} />
                 </FormControl>
@@ -160,8 +199,8 @@ export default function SignUp() {
             )}
           />
 
-          <Button type="submit" className="w-full">
-            Create Account
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Creating..." : "Create Account"}
           </Button>
         </form>
       </Form>
@@ -178,3 +217,4 @@ export default function SignUp() {
     </div>
   );
 }
+
