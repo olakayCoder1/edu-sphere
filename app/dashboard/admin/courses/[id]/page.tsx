@@ -482,7 +482,40 @@ export default function TutorCourseDetail() {
                   </CardHeader>
                   <CardContent>
                     {course.lessons && course.lessons.length > 0 ? (
-                      <></>
+                      <div className="space-y-2">
+                        {course.lessons
+                          .sort((a: { order: any; }, b: { order: any; }) => (a.order ?? 0) - (b.order ?? 0))
+                          .map((lesson: { id: any; title: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | PromiseLikeOfReactNode | null | undefined; content: string; }, index: number) => (
+                            <div
+                              key={`lesson-${lesson.id}`}
+                              className="flex items-center p-3 border rounded-md bg-background hover:bg-muted/50 transition-colors"
+                            >
+                              <div className="p-2 mr-2 rounded-md hover:bg-muted">
+                                <GripVertical className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                                    Lesson {index + 1}
+                                  </Badge>
+                                  <h3 className="font-medium">{lesson.title}</h3>
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                                  {lesson.content?.substring(0, 100)}...
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => openLessonModal(lesson)}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center py-10">
                         <BookOpen className="h-10 w-10 text-muted-foreground mb-4" />
