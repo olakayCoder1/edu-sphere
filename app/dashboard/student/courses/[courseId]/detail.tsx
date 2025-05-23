@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import {
     ChevronLeft,
     BookOpen, Award,
-    PlayCircle, CheckCircle,
+    PlayCircle,CheckCircle,
     XCircle,
     AlertCircle
 } from "lucide-react";
@@ -18,13 +18,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import courseService from "@/services/courseService"; // Import courseService for API calls
+import courseService from "@/services/courseService";
 
-// Updated type definitions to match the actual data structure
 type Option = {
-  is_correct: Option;
   id: number;
   text: string;
+  is_correct: boolean;
 }
 
 type Question = {
@@ -38,7 +37,7 @@ type Quiz = {
   title: string;
   questions: Question[];
   passing_score: number;
-  timeLimit?: number; // Added for UI compatibility
+  timeLimit?: number;
 }
 
 type Lesson = {
@@ -58,7 +57,7 @@ type Course = {
   created_at: string;
   updated_at: string;
   user: string;
-  progress?: number; // Added for UI compatibility
+  progress?: number;
 }
 
 export default function CourseDetail({ courseData }: { courseData: any }) {
@@ -67,27 +66,25 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
   const [course, setCourse] = useState<Course | null>(null);
   const [activeLesson, setActiveLesson] = useState<Lesson | null>(null);
   const [activeQuiz, setActiveQuiz] = useState<Quiz | null>(null);
-  const [quizTab, setQuizTab] = useState("preview");
+  const [activeTab, setActiveTab] = useState("content");
   const [quizStarted, setQuizStarted] = useState(false);
   const [quizAnswers, setQuizAnswers] = useState<number[]>([]);
   const [quizSubmitted, setQuizSubmitted] = useState(false);
   const [quizScore, setQuizScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(0);
   const [quizTimer, setQuizTimer] = useState<NodeJS.Timeout | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false); // State for tracking API submission
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLessonSelect = useCallback((lesson: Lesson) => {
     setActiveLesson(lesson);
   
-    // Reset quiz state when changing lessons
     setQuizStarted(false);
     setQuizAnswers([]);
     setQuizSubmitted(false);
     setQuizScore(0);
+    setActiveTab("content");
     if (quizTimer) clearInterval(quizTimer);
   
-    // Set the first quiz as active if available
     if (lesson?.quizzes && lesson.quizzes.length > 0) {
       const quizWithTimeLimit = {
         ...lesson.quizzes[0],
@@ -97,15 +94,12 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
     } else {
       setActiveQuiz(null);
     }
-  }, [quizTimer]);
+  }, []);
 
-
-  // Initialize the course data
   useEffect(() => {
     if (courseData) {
-      // Calculate progress based on completed lessons
       const completedCount = courseData.lessons.filter(
-        (        lesson: { completion_status: string; }) => lesson.completion_status === "completed"
+        (lesson: { completion_status: string; }) => lesson.completion_status === "completed"
       ).length;
       const totalLessons = courseData.lessons.length;
       const calculatedProgress = totalLessons > 0 
@@ -117,22 +111,23 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
         progress: courseData.progress || calculatedProgress
       });
       
-      // Set the first lesson as active by default
       if (courseData.lessons && courseData.lessons.length > 0) {
         handleLessonSelect(courseData.lessons[0]);
       }
     }
-  }, [courseData,handleLessonSelect]);
-
-
+  }, [courseData, handleLessonSelect]);
 
   const startQuiz = () => {
+    if (!activeQuiz) {
+      console.error("No active quiz found");
+      return;
+    }
+
     setQuizStarted(true);
-    setQuizTab("quiz");
-    setQuizAnswers(Array(activeQuiz?.questions.length || 0).fill(-1));
-    setTimeLeft(activeQuiz?.timeLimit ? activeQuiz.timeLimit * 60 : 600); // convert minutes to seconds
+    setActiveTab("quiz");
+    setQuizAnswers(Array(activeQuiz.questions.length).fill(-1));
+    setTimeLeft(activeQuiz.timeLimit ? activeQuiz.timeLimit * 60 : 600);
     
-    // Start timer
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
@@ -153,17 +148,13 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
     setQuizAnswers(newAnswers);
   };
 
-  // Function to call the API to mark lesson as completed
   const markLessonAsCompleted = async (courseId: number, lessonId: number) => {
     setIsSubmitting(true);
     try {
-      // Call the API endpoint to mark the lesson as completed
       await courseService.completeLesson(courseId, lessonId);
       updateLessonCompletionStatus(lessonId, "completed");    
-
     } catch (error) {
       console.error("Error marking lesson as completed:", error);
-      // Handle error - you could show a notification/alert here
     } finally {
       setIsSubmitting(false);
     }
@@ -172,17 +163,12 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
   const submitQuiz = async () => {
     if (quizTimer) clearInterval(quizTimer);
     
-    // Calculate score
     let correctAnswers = 0;
     if (activeQuiz && activeLesson && course) {
       activeQuiz.questions.forEach((question, index) => {
-        // Check if the selected option is correct by finding the option with is_correct=true
         const selectedOptionIndex = quizAnswers[index];
-        console.log(selectedOptionIndex)
         if (selectedOptionIndex >= 0) {
           const selectedOption = question.options[selectedOptionIndex];
-          console.log(selectedOption.is_correct)
-          console.log(selectedOption.text)
           if (selectedOption && selectedOption.is_correct) {
             correctAnswers++;
           }
@@ -190,25 +176,22 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
       });
       
       const score = Math.round((correctAnswers / activeQuiz.questions.length) * 100);
-      console.log(score)
       setQuizScore(score);
       
-      // If score is greater than or equal to passing score, mark lesson as completed
       if (score >= activeQuiz.passing_score) {
-        // Make API call to mark lesson as completed
         await markLessonAsCompleted(course.id, activeLesson.id);
       }
     }
     
     setQuizSubmitted(true);
   };
+  
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  // Helper function to get completion status badge variant
   const getCompletionBadgeVariant = (status: string) => {
     switch (status) {
       case "completed":
@@ -220,7 +203,6 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
     }
   };
 
-  // Helper function to get completion status display text
   const getCompletionStatusText = (status: string) => {
     switch (status) {
       case "completed":
@@ -232,7 +214,6 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
     }
   };
 
-  // Update lesson completion status
   const updateLessonCompletionStatus = (lessonId: number, newStatus: "completed" | "in_progress" | "not_started") => {
     if (!course) return;
     
@@ -242,7 +223,6 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
         : lesson
     );
     
-    // Recalculate progress
     const completedCount = updatedLessons.filter(
       lesson => lesson.completion_status === "completed"
     ).length;
@@ -286,7 +266,6 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Sidebar - Lesson List */}
           <div className="lg:col-span-1">
             <Card>
               <CardHeader className="pb-3">
@@ -298,7 +277,6 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
                     <span className="text-sm font-medium">Your Progress</span>
                     <span className="text-sm font-medium">{course.progress || 0}%</span>
                   </div>
-                  {/* <Progress value={course.progress || 0} className="h-2" /> */}
                 </div>
                 <ul className="divide-y">
                   {course.lessons.map((lesson, index) => (
@@ -331,9 +309,9 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
                             <span className="flex items-center">
                               <BookOpen className="h-3.5 w-3.5 mr-1" /> Lesson
                             </span>
-                            {lesson.quizzes && lesson.quizzes.length > 0 && (
+                            {lesson.quizzes.length > 0 && lesson?.quizzes[0] && (
                               <span className="flex items-center">
-                                <Award className="h-3.5 w-3.5 mr-1" /> Quiz
+                                <Award className="h-3.5 w-3.5 mr-1" /> {lesson.quizzes.length} Quiz
                               </span>
                             )}
                           </div>
@@ -346,7 +324,6 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
             </Card>
           </div>
 
-          {/* Right Content Area */}
           <div className="lg:col-span-2">
             {activeLesson && (
               <Card>
@@ -362,17 +339,16 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
                   <CardTitle>{activeLesson.title}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Tabs defaultValue="content">
+                  <Tabs value={activeTab} onValueChange={(value) => {
+                    console.log("Tabs value changed to:", value);
+                    setActiveTab(value);
+                    if (value === "quiz" && !quizStarted && !quizSubmitted && activeQuiz) {
+                      startQuiz();
+                    }
+                  }}>
                     <TabsList className="mb-4">
                       <TabsTrigger value="content">Content</TabsTrigger>
-                      {activeQuiz && (
-                        <TabsTrigger 
-                          value="quiz"
-                          onClick={() => setQuizTab("preview")}
-                        >
-                          Quiz
-                        </TabsTrigger>
-                      )}
+                      <TabsTrigger value="quiz">Quiz</TabsTrigger>
                     </TabsList>
                     <TabsContent value="content">
                       <div className="space-y-4">
@@ -405,7 +381,6 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
                           <Button 
                             disabled={
                               course.lessons.findIndex(l => l.id === activeLesson.id) === course.lessons.length - 1 ||
-                              // Disable Next Lesson button if current lesson is not completed
                               (activeLesson.completion_status !== "completed" && 
                                course.lessons.findIndex(l => l.id === activeLesson.id) < course.lessons.length - 1)
                             }
@@ -422,184 +397,174 @@ export default function CourseDetail({ courseData }: { courseData: any }) {
                       </div>
                     </TabsContent>
                     
-                    {activeQuiz && (
-                      <TabsContent value="quiz">
-                        {quizTab === "preview" && !quizStarted && !quizSubmitted && (
-                          <div className="text-center py-8">
-                            <Award className="h-12 w-12 mx-auto mb-4 text-primary" />
-                            <h2 className="text-2xl font-bold mb-2">{activeQuiz?.title}</h2>
-                            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                              Complete this quiz to test your knowledge and progress to the next lesson.
-                            </p>
-                            <div className="bg-muted/50 rounded-lg p-6 max-w-lg mx-auto">
-                              <div className="grid grid-cols-2 gap-4 mb-6">
-                                <div className="text-left">
-                                  <p className="text-sm text-muted-foreground">Questions</p>
-                                  <p className="font-medium">{activeQuiz?.questions.length} questions</p>
-                                </div>
-                                <div className="text-left">
-                                  <p className="text-sm text-muted-foreground">Time Limit</p>
-                                  <p className="font-medium">{activeQuiz?.timeLimit || 3} minutes</p>
-                                </div>
-                                <div className="text-left">
-                                  <p className="text-sm text-muted-foreground">Passing Score</p>
-                                  <p className="font-medium">{activeQuiz?.passing_score || 70}%</p>
-                                </div>
-                                <div className="text-left">
-                                  <p className="text-sm text-muted-foreground">Attempts</p>
-                                  <p className="font-medium">Unlimited</p>
-                                </div>
+                    <TabsContent value="quiz">
+                      {!activeQuiz ? (
+                        <div className="text-center py-12">
+                          <h3 className="text-lg font-medium mb-2">No Quiz Available</h3>
+                          <p className="text-muted-foreground">This lesson does not have a quiz.</p>
+                        </div>
+                      ) : !quizStarted && !quizSubmitted ? (
+                        <div className="text-center py-8">
+                          <Award className="h-12 w-12 mx-auto mb-4 text-primary" />
+                          <h2 className="text-2xl font-bold mb-2">{activeQuiz.title}</h2>
+                          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                            Complete this quiz to test your knowledge and progress to the next lesson.
+                          </p>
+                          <div className="bg-muted/50 rounded-lg p-6 max-w-lg mx-auto">
+                            <div className="grid grid-cols-2 gap-4 mb-6">
+                              <div className="text-left">
+                                <p className="text-sm text-muted-foreground">Questions</p>
+                                <p className="font-medium">{activeQuiz.questions.length} questions</p>
                               </div>
-                              <Button onClick={startQuiz} className="w-full">Start Quiz</Button>
+                              <div className="text-left">
+                                <p className="text-sm text-muted-foreground">Time Limit</p>
+                                <p className="font-medium">{activeQuiz.timeLimit || 3} minutes</p>
+                              </div>
+                              <div className="text-left">
+                                <p className="text-sm text-muted-foreground">Passing Score</p>
+                                <p className="font-medium">{activeQuiz.passing_score}%</p>
+                              </div>
+                              <div className="text-left">
+                                <p className="text-sm text-muted-foreground">Attempts</p>
+                                <p className="font-medium">Unlimited</p>
+                              </div>
+                            </div>
+                            <Button onClick={startQuiz} className="w-full">Start Quiz</Button>
+                          </div>
+                        </div>
+                      ) : quizStarted && !quizSubmitted ? (
+                        <div>
+                          <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold">{activeQuiz.title}</h2>
+                            <div className="bg-muted px-3 py-1 rounded-full">
+                              <span className="font-medium">Time Left: {formatTime(timeLeft)}</span>
                             </div>
                           </div>
-                        )}
-                        
-                        {quizStarted && !quizSubmitted && (
-                          <div>
-                            <div className="flex justify-between items-center mb-6">
-                              <h2 className="text-xl font-bold">{activeQuiz?.title}</h2>
-                              <div className="bg-muted px-3 py-1 rounded-full">
-                                <span className="font-medium">Time Left: {formatTime(timeLeft)}</span>
-                              </div>
-                            </div>
-                            
-                            <div className="space-y-8">
-                              {activeQuiz?.questions?.map((question, qIndex) => (
-                                <div key={question.id} className="border rounded-lg p-6">
-                                  <h3 className="text-lg font-medium mb-4">
-                                    {qIndex + 1}. {question.text}
-                                  </h3>
-                                  <div className="space-y-3">
-                                    {question.options.map((option, oIndex) => (
-                                      <div 
-                                        key={option.id}
-                                        className={cn(
-                                          "border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors",
-                                          quizAnswers[qIndex] === oIndex && "border-primary bg-primary/5"
-                                        )}
-                                        onClick={() => handleAnswerSelect(qIndex, oIndex)}
-                                      >
-                                        <div className="flex items-center">
-                                          <div className={cn(
-                                            "h-5 w-5 rounded-full border mr-3 flex items-center justify-center",
-                                            quizAnswers[qIndex] === oIndex && "border-primary bg-primary text-primary-foreground"
-                                          )}>
-                                            {quizAnswers[qIndex] === oIndex && <div className="h-2 w-2 rounded-full bg-current"></div>}
-                                          </div>
-                                          <span>{option.text}</span>
+                          
+                          <div className="space-y-8">
+                            {activeQuiz.questions.map((question, qIndex) => (
+                              <div key={question.id} className="border rounded-lg p-6">
+                                <h3 className="text-lg font-medium mb-4">
+                                  {qIndex + 1}. {question.text}
+                                </h3>
+                                <div className="space-y-3">
+                                  {question.options.map((option, oIndex) => (
+                                    <div 
+                                      key={option.id}
+                                      className={cn(
+                                        "border rounded-lg p-4 cursor-pointer hover:bg-muted/50 transition-colors",
+                                        quizAnswers[qIndex] === oIndex && "border-primary bg-primary/5"
+                                      )}
+                                      onClick={() => handleAnswerSelect(qIndex, oIndex)}
+                                    >
+                                      <div className="flex items-center">
+                                        <div className={cn(
+                                          "h-5 w-5 rounded-full border mr-3 flex items-center justify-center",
+                                          quizAnswers[qIndex] === oIndex && "border-primary bg-primary text-primary-foreground"
+                                        )}>
+                                          {quizAnswers[qIndex] === oIndex && <div className="h-2 w-2 rounded-full bg-current"></div>}
                                         </div>
+                                        <span>{option.text}</span>
                                       </div>
-                                    ))}
-                                  </div>
+                                    </div>
+                                  ))}
                                 </div>
-                              ))}
+                              </div>
+                            ))}
+                          </div>
+                          
+                          <div className="mt-8 flex justify-between">
+                            <Button variant="outline" onClick={() => {
+                              setQuizStarted(false);
+                              setQuizSubmitted(false);
+                              setActiveTab("content");
+                            }}>
+                              Back to Overview
+                            </Button>
+                            <Button onClick={submitQuiz} disabled={isSubmitting}>
+                              {isSubmitting ? "Submitting..." : "Submit Quiz"}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : quizSubmitted ? (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.5 }}
+                          className="text-center py-8"
+                        >
+                          {quizScore >= (activeQuiz.passing_score || 70) ? (
+                            <CheckCircle className="h-16 w-16 mx-auto mb-4 text-green-500" />
+                          ) : (
+                            <XCircle className="h-16 w-16 mx-auto mb-4 text-red-500" />
+                          )}
+                          
+                          <h2 className="text-2xl font-bold mb-2">
+                            {quizScore >= (activeQuiz.passing_score || 70) ? "Quiz Passed!" : "Quiz Failed"}
+                          </h2>
+                          
+                          <p className="text-muted-foreground mb-6">
+                            {quizScore >= (activeQuiz.passing_score || 70) 
+                              ? "Great job! You've successfully completed this quiz." 
+                              : "Don't worry, you can review the material and try again."}
+                          </p>
+                          
+                          <div className="bg-muted/50 rounded-lg p-6 max-w-md mx-auto mb-8">
+                            <div className="mb-4">
+                              <p className="text-sm text-muted-foreground mb-1">Your Score</p>
+                              <div className="flex items-center justify-center gap-2">
+                                {/* <Progress value={quizScore} className="h-3 w-40" /> */}
+                                <span className="font-bold text-lg">{quizScore}%</span>
+                              </div>
                             </div>
                             
-                            <div className="mt-8 flex justify-between">
-                              <Button variant="outline" onClick={() => setQuizTab("preview")}>
-                                Back to Overview
-                              </Button>
-                              <Button onClick={submitQuiz} disabled={isSubmitting}>
-                                {isSubmitting ? "Submitting..." : "Submit Quiz"}
-                              </Button>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <p className="text-muted-foreground">Passing Score</p>
+                                <p className="font-medium">{activeQuiz.passing_score}%</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">Time Taken</p>
+                                <p className="font-medium">{(activeQuiz.timeLimit || 3) - Math.floor(timeLeft / 60)} min</p>
+                              </div>
                             </div>
                           </div>
-                        )}
-                        
-                        {quizSubmitted && (
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5 }}
-                            className="text-center py-8"
-                          >
-                            {quizScore >= (activeQuiz?.passing_score || 70) ? (
-                              <CheckCircle className="h-16 w-16 mx-auto mb-4 text-green-500" />
-                            ) : (
-                              <XCircle className="h-16 w-16 mx-auto mb-4 text-red-500" />
-                            )}
+                          
+                          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <Button onClick={() => {
+                              setQuizStarted(false);
+                              setQuizSubmitted(false);
+                              setActiveTab("quiz");
+                            }} variant="outline">
+                              Try Again
+                            </Button>
                             
-                            <h2 className="text-2xl font-bold mb-2">
-                              {quizScore >= (activeQuiz?.passing_score || 70) ? "Quiz Passed!" : "Quiz Failed"}
-                            </h2>
-                            
-                            <p className="text-muted-foreground mb-6">
-                              {quizScore >= (activeQuiz?.passing_score || 70) 
-                                ? "Great job! You've successfully completed this quiz." 
-                                : "Don't worry, you can review the material and try again."}
-                            </p>
-                            
-                            <div className="bg-muted/50 rounded-lg p-6 max-w-md mx-auto mb-8">
-                              <div className="mb-4">
-                                <p className="text-sm text-muted-foreground mb-1">Your Score</p>
-                                <div className="flex items-center justify-center gap-2">
-                                  {/* <Progress value={quizScore} className="h-3 w-40" /> */}
-                                  <span className="font-bold text-lg">{quizScore}%</span>
-                                </div>
-                              </div>
-                              
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <p className="text-muted-foreground">Passing Score</p>
-                                  <p className="font-medium">{activeQuiz?.passing_score}%</p>
-                                </div>
-                                <div>
-                                  <p className="text-muted-foreground">Time Taken</p>
-                                  <p className="font-medium">{activeQuiz?.timeLimit || 3 - Math.floor(timeLeft / 60)} min</p>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            {quizScore >= (activeQuiz.passing_score || 70) && (
                               <Button onClick={() => {
-                                setQuizStarted(false);
-                                setQuizSubmitted(false);
-                                setQuizTab("preview");
-                              }} variant="outline">
-                                Try Again
-                              </Button>
-                              
-                              {quizScore >= (activeQuiz?.passing_score || 70) && (
-                                <Button onClick={() => {
-                                  // Move to next lesson if available
-                                  const currentIndex = course.lessons.findIndex(l => l.id === activeLesson?.id);
-                                  if (currentIndex < course.lessons.length - 1) {
-                                    // Set next lesson to in_progress if it's not already completed
-                                    const nextLesson = course.lessons[currentIndex + 1];
-                                    if (nextLesson.completion_status !== "completed") {
-                                      updateLessonCompletionStatus(nextLesson.id, "in_progress");
-                                    }
-                                    
-                                    // Reset quiz states before changing lessons
-                                    setQuizStarted(false);
-                                    setQuizSubmitted(false);
-                                    setQuizTab("preview");
-                                    setQuizAnswers([]);
-                                    setQuizScore(0);
-                                    if (quizTimer) clearInterval(quizTimer);
-                                    
-                                    // Select the next lesson
-                                    handleLessonSelect(course.lessons[currentIndex + 1]);
-                                    
-                                    // Set the active tab to content to ensure lesson content is shown
-                                    const tabsElement = document.querySelector('[role="tablist"]');
-                                    if (tabsElement) {
-                                      const contentTab = tabsElement.querySelector('[value="content"]');
-                                      if (contentTab) {
-                                        (contentTab as HTMLElement).click();
-                                      }
-                                    }
+                                const currentIndex = course.lessons.findIndex(l => l.id === activeLesson?.id);
+                                if (currentIndex < course.lessons.length - 1) {
+                                  const nextLesson = course.lessons[currentIndex + 1];
+                                  if (nextLesson.completion_status !== "completed") {
+                                    updateLessonCompletionStatus(nextLesson.id, "in_progress");
                                   }
-                                }}>
-                                  Continue to Next Lesson
-                                </Button>
-                              )}
-                            </div>
-                          </motion.div>
-                        )}
-                      </TabsContent>
-                    )}
+                                  
+                                  setQuizStarted(false);
+                                  setQuizSubmitted(false);
+                                  setQuizAnswers([]);
+                                  setQuizScore(0);
+                                  if (quizTimer) clearInterval(quizTimer);
+                                  setActiveTab("content");
+                                  
+                                  handleLessonSelect(course.lessons[currentIndex + 2]);
+                                }
+                              }}>
+                                Continue to Next Lesson
+                              </Button>
+                            )}
+                          </div>
+                        </motion.div>
+                      ) : null}
+                    </TabsContent>
                   </Tabs>
                 </CardContent>
               </Card>
