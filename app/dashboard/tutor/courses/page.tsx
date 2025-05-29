@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation'
 import { Header } from "@/components/dashboard/header";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,7 @@ import courseService from "@/services/courseService";
 import { toast } from "sonner";
 
 export default function TutorCourseManagement() {
+  const router = useRouter();
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteLoading, setDeleteLoading] = useState<number | null>(null);
@@ -126,6 +128,11 @@ export default function TutorCourseManagement() {
       <main className="container mx-auto px-4 py-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold">Your Courses</h2>
+          <Button  onClick={() => router.push('/livestream')} >Start A Live Session</Button>
+          {/* <button onClick={() => router.push('/livestream')}>
+      Start A Live Session
+    </button> */}
+    
           
           <Dialog>
             <DialogTrigger asChild>
