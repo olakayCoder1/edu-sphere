@@ -114,18 +114,18 @@ export default function MeetingPage() {
 //   };
 
 
-    if (isFetching) {
-    return (
-      <div>
-        <Header title="Loading..." />
-        <main className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
-        </main>
-      </div>
-    );
-  }
+  //   if (isFetching) {
+  //   return (
+  //     <div>
+  //       <Header title="Loading..." />
+  //       <main className="container mx-auto px-4 py-6">
+  //         <div className="flex items-center justify-center py-12">
+  //           <Loader2 className="h-8 w-8 animate-spin" />
+  //         </div>
+  //       </main>
+  //     </div>
+  //   );
+  // }
 
 //   return (<div>{profile?.name}</div>)
 
